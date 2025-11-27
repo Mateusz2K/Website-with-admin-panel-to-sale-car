@@ -1,0 +1,29 @@
+/* admin-style.css */
+
+body {
+    padding-top: 70px; /* Wysokość paska nawigacji + mały margines */
+    background-color: #f0f2f5; /* Jaśniejsze, neutralne tło */
+}
+
+.table-responsive {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+/* USUNIĘTO: Problematyczny styl dla thead, który powodował błędy w wyświetlaniu */
+
+.form-container {
+    background-color: #fff;
+    padding: 2rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.btn-action {
+    width: 38px;
+    height: 38px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}

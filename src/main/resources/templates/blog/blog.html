@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lista Wpisów Blogowych</title>
+    <style>
+        body { font-family: sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #dddddd; text-align: left; padding: 8px; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        a { text-decoration: none; }
+        .actions a { margin-right: 10px; }
+        .add-link { margin-bottom: 20px; display: inline-block; }
+    </style>
+</head>
+<body>
+
+<h1>Lista Wpisów Blogowych</h1>
+
+<a th:href="@{/admin/blog/new}" class="add-link">Dodaj nowy wpis</a>
+
+<table>
+    <thead>
+    <tr>
+        <th>Tytuł</th>
+        <th>Autor</th>
+        <th>Data Publikacji</th>
+        <th>Akcje</th>
+    </tr>
+    </thead>
+    <tbody>
+    <!-- Pętla po liście 'posts' przekazanej z kontrolera -->
+    <tr th:each="post : ${posts}">
+        <td th:text="${post.tytul}">Przykładowy Tytuł</td>
+        <td th:text="${post.autor}">Jan Kowalski</td>
+        <td th:text="${#temporals.format(post.dataPublikacji, 'dd-MM-yyyy')}">2024-01-01</td>
+        <td class="actions">
+            <!-- Link do edycji wpisu -->
+            <a th:href="@{/admin/blog/edit/{id}(id=${post.id})}">Edytuj</a>
+            <!-- Link do usunięcia wpisu z potwierdzeniem JS -->
+            <a th:href="@{/admin/blog/delete/{id}(id=${post.id})}"
+               onclick="return confirm('Czy na pewno chcesz usunąć ten wpis?');">Usuń</a>
+        </td>
+    </tr>
+    <!-- Komunikat, jeśli lista jest pusta -->
+    <tr th:if="${posts.isEmpty()}">
+        <td colspan="4" style="text-align: center;">Brak wpisów do wyświetlenia.</td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>

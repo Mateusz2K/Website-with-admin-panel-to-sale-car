@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logowanie - Panel Administracyjny</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome dla ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Własny arkusz stylów -->
+    <link rel="stylesheet" th:href="@{/css/login-style.css}">
+</head>
+<body class="d-flex align-items-center justify-content-center">
+
+<div class="login-container">
+    <div class="text-center mb-4">
+        <h1 class="h3 mb-3 fw-normal">
+            <i class="fas fa-car-side"></i> Panel Administracyjny
+        </h1>
+        <p>Zaloguj się, aby kontynuować</p>
+    </div>
+
+    <form th:action="@{/login}" method="post" class="p-4 p-md-5 border rounded-3 bg-light">
+        <!-- Komunikat o błędzie logowania -->
+        <div th:if="${param.error}" class="alert alert-danger" role="alert">
+            Nieprawidłowa nazwa użytkownika lub hasło.
+        </div>
+
+        <!-- Komunikat o wylogowaniu -->
+        <div th:if="${param.logout}" class="alert alert-success" role="alert">
+            Zostałeś pomyślnie wylogowany.
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="username" name="username" placeholder="Nazwa użytkownika" required autofocus>
+            <label for="username">Nazwa użytkownika</label>
+        </div>
+
+        <div class="form-floating mb-3">
+            <input type="password" class="form-control" id="password" name="password" placeholder="Hasło" required>
+            <label for="password">Hasło</label>
+        </div>
+
+        <button class="w-100 btn btn-lg btn-primary" type="submit">Zaloguj się</button>
+        <hr class="my-4">
+        <small class="text-muted">Klikając "Zaloguj się", akceptujesz warunki użytkowania.</small>
+    </form>
+    <div class="text-center mt-3">
+        <a th:href="@{/}" class="back-to-home-link">&larr; Wróć na stronę główną</a>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
