@@ -5,8 +5,10 @@ public enum RodzajPaliwa {
     BENZYNA_CNG("Benzyna+CNG"),
     BENZYNA_LPG("Benzyna+LPG"),
     DIESEL("Diesel"),
+    HYBRYDA("Hybryda"),
     ELEKTRYCZNY("Elektryczny");
     private final String displayName;
+    //TODO: HYBRYDA
 
     RodzajPaliwa(String displayName) {
         this.displayName = displayName;

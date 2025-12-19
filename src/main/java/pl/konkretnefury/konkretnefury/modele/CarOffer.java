@@ -21,23 +21,24 @@ public class CarOffer {
     @ManyToOne @JoinColumn(name = "brand_id") private Brand brand;
     @ManyToOne @JoinColumn(name = "model_id") private BrandsModel model;
     private int rok;
-    
-    // ZMIANA: Dodanie adnotacji formującej dla ceny
-    @PriceFormat
-    private BigDecimal cena;
-    
-    @MileageFormat
-    private Integer przebieg;
-    @PowerFormat
-    private Integer moc;
-    @VolumeFormat
-    private Integer pojemonscSilnika;
+    @PriceFormat private BigDecimal cena;
+    @MileageFormat private Integer przebieg;
+    @PowerFormat private Integer moc;
+    @VolumeFormat private Integer pojemonscSilnika;
+    private String KrajPochodzenia;
+    private String kolor;
+    private String gwarancjaOpis;
+
+    // ZMIANA: Dodano @Column(length=50) do wszystkich pól enum
+    @Enumerated(EnumType.STRING) @Column(length = 50) private SkrzyniaBiegow skrzyniaBiegow;
+    @Enumerated(EnumType.STRING) @Column(length = 50) private TypPojazdu typPojazdu;
+    @Enumerated(EnumType.STRING) @Column(length = 50) private Naped naped;
+    @Enumerated(EnumType.STRING) @Column(length = 50) private RodzajPaliwa rodzajPaliwa;
+    @Enumerated(EnumType.STRING) @Column(length = 50) private RodzajNadwozia rodzajNadwozia;
+    @Enumerated(EnumType.STRING) @Column(length = 50) private StatusOfCar status;
 
     private String liczba_drzwi;
-    @Enumerated(EnumType.STRING) private RodzajPaliwa rodzajPaliwa;
-    @Enumerated(EnumType.STRING) private RodzajNadwozia rodzajNadwozia;
     @Lob private String opis;
-    @Enumerated(EnumType.STRING) private StatusOfCar status;
     private boolean isFeatured = false;
     @CreationTimestamp private LocalDateTime creationDate;
 
@@ -87,4 +88,16 @@ public class CarOffer {
     public void setMoc(Integer moc) { this.moc = moc; }
     public Integer getPojemonscSilnika() { return pojemonscSilnika; }
     public void setPojemonscSilnika(Integer pojemonscSilnika) { this.pojemonscSilnika = pojemonscSilnika; }
+    public String getKrajPochodzenia() { return KrajPochodzenia; }
+    public void setKrajPochodzenia(String krajPochodzenia) { KrajPochodzenia = krajPochodzenia; }
+    public String getKolor() { return kolor; }
+    public void setKolor(String kolor) { this.kolor = kolor; }
+    public String getGwarancjaOpis() { return gwarancjaOpis; }
+    public void setGwarancjaOpis(String gwarancjaOpis) { this.gwarancjaOpis = gwarancjaOpis; }
+    public SkrzyniaBiegow getSkrzyniaBiegow() { return skrzyniaBiegow; }
+    public void setSkrzyniaBiegow(SkrzyniaBiegow skrzyniaBiegow) { this.skrzyniaBiegow = skrzyniaBiegow; }
+    public TypPojazdu getTypPojazdu() { return typPojazdu; }
+    public void setTypPojazdu(TypPojazdu typPojazdu) { this.typPojazdu = typPojazdu; }
+    public Naped getNaped() { return naped; }
+    public void setNaped(Naped naped) { this.naped = naped; }
 }

@@ -8,10 +8,11 @@ public enum RodzajNadwozia {
     HATCHBACK("Hatchback"),
     KABRIOLET("Kabriolet"),
     COUPE("Coupe"),
-    AUTA_MIEJSKIE("Auta Miejskie"),
-    AUTA_MALE("Auta Małe");
+    KOMBI("Kombi");
+//    AUTA_MIEJSKIE("Auta Miejskie"),
+//    AUTA_MALE("Auta Małe");
     private final String displayName;
-
+    //TODO: dodać nadwozie do filtrów
     RodzajNadwozia(String displayName) {
         this.displayName = displayName;
     }

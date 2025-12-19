@@ -9,6 +9,7 @@ public class OfferFilterDTO {
     private BigDecimal priceTo;
     private Integer yearFrom;
     private Integer yearTo;
+    private String typNadwozia;
 
     // Getters and Setters
     public UUID getBrandId() { return brandId; }
@@ -21,4 +22,12 @@ public class OfferFilterDTO {
     public void setYearFrom(Integer yearFrom) { this.yearFrom = yearFrom; }
     public Integer getYearTo() { return yearTo; }
     public void setYearTo(Integer yearTo) { this.yearTo = yearTo; }
+
+    public String getTypNadwozia() {
+        return typNadwozia;
+    }
+
+    public void setTypNadwozia(String typNadwozia) {
+        this.typNadwozia = typNadwozia;
+    }
 }

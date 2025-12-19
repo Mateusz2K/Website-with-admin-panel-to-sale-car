@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Zarządzaj Ofertą</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/admin-style.css}">
 </head>
 <body>
@@ -13,8 +14,34 @@
         <h1 class="h2 mb-4" th:text="${offer.id == null ? 'Dodaj Nową Ofertę' : 'Edytuj Ofertę'}"></h1>
         <form th:action="@{/admin/offers}" th:object="${offer}" method="post" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}"/>
-            
-            <!-- ... reszta formularza ... -->
+
+            <!-- SEKCJA ZARZĄDZANIA ZDJĘCIAMI -->
+            <div th:if="${offer.id != null}" class="mb-5">
+                <h3 class="h4">Zarządzaj Zdjęciami</h3>
+                <div id="imageCarousel" class="carousel slide" data-bs-interval="false">
+                    <div class="carousel-inner">
+                        <div th:if="${offer.zdjęcia.isEmpty()}" class="carousel-item active"><div class="d-flex justify-content-center align-items-center bg-light" style="height: 400px;"><span>Brak zdjęć</span></div></div>
+                        <div th:each="image, iterStat : ${offer.zdjęcia}" class="carousel-item" th:classappend="${iterStat.first ? 'active' : ''}" th:data-image-id="${image.id}">
+                            <img th:src="@{/car_photo/{fileName}(fileName=${image.fileName})}" class="d-block w-100" style="height: 400px; object-fit: contain;">
+                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
+                                <button type="button" class="btn btn-sm btn-primary" th:classappend="${image.isMain ? 'disabled' : ''}" onclick="setMainImage(this)"><i class="fas fa-star"></i> Ustaw jako główne</button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteImage(this)"><i class="fas fa-trash"></i> Usuń</button>
+                                <p th:if="${image.isMain}" class="mt-2 mb-0"><span class="badge bg-success">Zdjęcie główne</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="images" class="form-label">Dodaj nowe zdjęcia</label>
+                <input class="form-control" type="file" id="images" name="images" multiple>
+            </div>
+            <hr>
+
+            <!-- SEKCJA DANYCH PODSTAWOWYCH -->
             <div class="row">
                 <div class="col-md-6 mb-3"><label for="brand" class="form-label">Marka</label><select id="brand" class="form-select" th:field="*{brand}" required><option value="">-- Wybierz --</option><option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.nazwaMarki}"></option></select></div>
                 <div class="col-md-6 mb-3"><label for="model" class="form-label">Model</label><select id="model" class="form-select" th:field="*{model}" required disabled><option th:if="${offer.model != null}" th:value="${offer.model.id}" th:text="${offer.model.model}" selected></option></select></div>
@@ -22,21 +49,38 @@
             <div class="row">
                 <div class="col-md-4 mb-3"><label for="rok" class="form-label">Rok</label><input type="number" id="rok" class="form-control" th:field="*{rok}" required></div>
                 <div class="col-md-4 mb-3"><label for="cena" class="form-label">Cena (PLN)</label><input type="number" step="0.01" id="cena" class="form-control" th:field="*{cena}" required></div>
-                <div class="col-md-4 mb-3"><label for="przebieg" class="form-label">Przebieg</label><input type="text" id="przebieg" class="form-control" th:field="*{przebieg}" required></div>
+                <div class="col-md-4 mb-3"><label for="przebieg" class="form-label">Przebieg</label><input type="number" id="przebieg" class="form-control" th:field="*{przebieg}" required></div>
             </div>
             <div class="row">
-                <div class="col-md-4 mb-3"><label for="pojemonscSilnika" class="form-label">Pojemność (cm³)</label><input type="text" id="pojemonscSilnika" class="form-control" th:field="*{pojemonscSilnika}" required></div>
-                <div class="col-md-4 mb-3"><label for="moc" class="form-label">Moc (KM)</label><input type="text" id="moc" class="form-control" th:field="*{moc}" required></div>
+                <div class="col-md-4 mb-3"><label for="pojemonscSilnika" class="form-label">Pojemność (cm³)</label><input type="number" id="pojemonscSilnika" class="form-control" th:field="*{pojemonscSilnika}" required></div>
+                <div class="col-md-4 mb-3"><label for="moc" class="form-label">Moc (KM)</label><input type="number" id="moc" class="form-control" th:field="*{moc}" required></div>
                 <div class="col-md-4 mb-3"><label for="rodzajPaliwa" class="form-label">Paliwo</label><select id="rodzajPaliwa" class="form-select" th:field="*{rodzajPaliwa}" required><option value="">-- Wybierz --</option><option th:each="paliwo : ${T(pl.konkretnefury.konkretnefury.modele.RodzajPaliwa).values()}" th:value="${paliwo}" th:text="${paliwo.displayName}"></option></select></div>
             </div>
             <div class="row">
                 <div class="col-md-4 mb-3"><label for="rodzajNadwozia" class="form-label">Nadwozie</label><select id="rodzajNadwozia" class="form-select" th:field="*{rodzajNadwozia}" required><option value="">-- Wybierz --</option><option th:each="nadwozie : ${T(pl.konkretnefury.konkretnefury.modele.RodzajNadwozia).values()}" th:value="${nadwozie}" th:text="${nadwozie.displayName}"></option></select></div>
+                <div class="col-md-4 mb-3"><label for="kolor" class="form-label">Kolor</label><input type="text" id="kolor" class="form-control" th:field="*{kolor}"></div>
+                <div class="col-md-4 mb-3"><label for="krajPochodzenia" class="form-label">Kraj pochodzenia</label><input type="text" id="krajPochodzenia" class="form-control" th:field="*{KrajPochodzenia}"></div>
             </div>
+            <div class="row">
+                <div class="col-md-4 mb-3"><label for="naped" class="form-label">Napęd</label><select id="naped" class="form-select" th:field="*{naped}"><option value="">-- Wybierz --</option><option th:each="n : ${T(pl.konkretnefury.konkretnefury.modele.Naped).values()}" th:value="${n}" th:text="${n.displayName}"></option></select></div>
+                <div class="col-md-4 mb-3"><label for="skrzyniaBiegow" class="form-label">Skrzynia biegów</label><select id="skrzyniaBiegow" class="form-select" th:field="*{skrzyniaBiegow}"><option value="">-- Wybierz --</option><option th:each="s : ${T(pl.konkretnefury.konkretnefury.modele.SkrzyniaBiegow).values()}" th:value="${s}" th:text="${s.displayName}"></option></select></div>
+                <div class="col-md-4 mb-3"><label for="typPojazdu" class="form-label">Typ pojazdu</label><select id="typPojazdu" class="form-select" th:field="*{typPojazdu}"><option value="">-- Wybierz --</option><option th:each="t : ${T(pl.konkretnefury.konkretnefury.modele.TypPojazdu).values()}" th:value="${t}" th:text="${t.displayName}"></option></select></div>
+            </div>
+
+            <div class="mb-3">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="gwarancjaCheck" onchange="toggleGwarancjaOpis()">
+                    <label class="form-check-label" for="gwarancjaCheck">Dodaj opis gwarancji</label>
+                </div>
+                <div id="gwarancjaOpisContainer" style="display: none;" class="mt-2">
+                    <label for="gwarancjaOpis" class="form-label">Szczegóły gwarancji</label>
+                    <textarea id="gwarancjaOpis" class="form-control" th:field="*{gwarancjaOpis}" rows="2"></textarea>
+                </div>
+            </div>
+
             <div class="mb-3"><label for="opis" class="form-label">Opis</label><textarea id="opis" class="form-control" rows="5" th:field="*{opis}"></textarea></div>
-            <div class="mb-4"><label for="images" class="form-label">Zdjęcia</label><input class="form-control" type="file" id="images" name="images" multiple></div>
             <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="isFeatured" th:field="*{featured}"><label class="form-check-label" for="isFeatured"><strong>Oznacz jako promowana</strong></label></div>
 
-            <!-- NOWA SEKCJA: Wyposażenie -->
             <hr><h3 class="h4 mt-4 mb-3">Wyposażenie</h3>
             <div class="row">
                 <div th:each="category : ${T(pl.konkretnefury.konkretnefury.modele.TypeOfCarOptions).values()}" class="col-md-4 mb-3">
@@ -54,7 +98,7 @@
         </form>
     </div>
 </main>
-<script th:src="@{/js/model-loader.js}"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
     // Skrypt do dynamicznego ładowania modeli
@@ -69,7 +113,6 @@
                 modelSelect.disabled = true;
                 return;
             }
-
             fetch(`/api/models/by-brand/${brandId}`)
                 .then(response => response.json())
                 .then(data => {
@@ -99,9 +142,16 @@
         if (brandSelect.value) {
             fetchModels(brandSelect.value);
         }
+
+        // Ustaw stan początkowy gwarancji przy ładowaniu strony (dla edycji)
+        const textarea = document.getElementById('gwarancjaOpis');
+        if (textarea.value) {
+            document.getElementById('gwarancjaCheck').checked = true;
+            toggleGwarancjaOpis();
+        }
     });
 
-    // Skrypty do zarządzania zdjęciami
+    // Skrypty do zarządzania istniejącymi zdjęciami
     function setMainImage(button) {
         const imageId = button.closest('.carousel-item').dataset.imageId;
         fetch(`/api/images/set-main/${imageId}`, { method: 'POST' }).then(() => window.location.reload());
@@ -112,6 +162,47 @@
             fetch(`/api/images/delete/${imageId}`, { method: 'DELETE' }).then(() => window.location.reload());
         }
     }
+
+    // Skrypt do pokazywania/ukrywania opisu gwarancji
+    function toggleGwarancjaOpis() {
+        const container = document.getElementById('gwarancjaOpisContainer');
+        const checkbox = document.getElementById('gwarancjaCheck');
+        const textarea = document.getElementById('gwarancjaOpis');
+        if (checkbox.checked) {
+            container.style.display = 'block';
+        } else {
+            container.style.display = 'none';
+            textarea.value = '';
+        }
+    }
+
+    // Skrypt do natychmiastowego podglądu nowo dodanych zdjęć
+    document.getElementById('images').addEventListener('change', function(event) {
+        const carouselInner = document.querySelector('#imageCarousel .carousel-inner');
+        const files = event.target.files;
+        const placeholder = carouselInner.querySelector('.d-flex.justify-content-center');
+        if (placeholder) {
+            placeholder.parentElement.remove();
+        }
+        for (const file of files) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const div = document.createElement('div');
+                div.classList.add('carousel-item');
+                if (!carouselInner.querySelector('.active')) {
+                    div.classList.add('active');
+                }
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.classList.add('d-block', 'w-100');
+                img.style.height = '400px';
+                img.style.objectFit = 'contain';
+                div.appendChild(img);
+                carouselInner.appendChild(div);
+            }
+            reader.readAsDataURL(file);
+        }
+    });
 </script>
 
 </body>

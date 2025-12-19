@@ -2,50 +2,58 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Wszystkie Oferty - Konkretne Fury</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/home-style.css}">
 </head>
 <body>
-
 <div th:replace="~{/public/fragments/navigation :: navbar}"></div>
-
 <main class="container mt-5 py-5">
     <header class="text-center mb-5">
         <h1 class="display-4">Nasza Oferta</h1>
         <p class="lead text-muted">Przeglądaj wszystkie dostępne samochody.</p>
     </header>
 
-    <!-- NOWY FORMULARZ FILTROWANIA -->
     <form th:action="@{/offers}" th:object="${filters}" method="get" class="row g-3 mb-5 p-4 bg-light rounded">
         <div class="col-md-3"><label for="brandId" class="form-label">Marka</label><select id="brandId" class="form-select" th:field="*{brandId}"><option value="">Wszystkie</option><option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.nazwaMarki}"></option></select></div>
         <div class="col-md-2"><label for="priceFrom" class="form-label">Cena od</label><input type="number" id="priceFrom" class="form-control" th:field="*{priceFrom}"></div>
         <div class="col-md-2"><label for="priceTo" class="form-label">Cena do</label><input type="number" id="priceTo" class="form-control" th:field="*{priceTo}"></div>
-        <div class="col-md-2"><label for="yearFrom" class="form-label">Rocznik od</label><input type="number" id="yearFrom" class="form-control" th:field="*{yearFrom}"></div>
-        <div class="col-md-2"><label for="yearTo" class="form-label">Rocznik do</label><input type="number" id="yearTo" class="form-control" th:field="*{yearTo}"></div>
+        <div class="col-md-2"><label for="yearFrom" class="form-label">Rok produkcji od</label><input type="number" id="yearFrom" class="form-control" th:field="*{yearFrom}"></div>
+        <div class="col-md-2"><label for="yearTo" class="form-label">Rok produkcji do</label><input type="number" id="yearTo" class="form-control" th:field="*{yearTo}"></div>
         <div class="col-md-1 d-flex align-items-end"><button type="submit" class="btn btn-primary w-100">Filtruj</button></div>
     </form>
 
     <div class="row">
-        <div th:each="offer : ${offers}" class="col-md-6 col-lg-4 mb-4">
+        <div th:each="offer : ${offersPage.content}" class="col-md-6 col-lg-4 mb-4">
             <div class="card offer-card h-100">
                 <div class="card-img-container">
-                    <th:block th:with="mainImage=${offer.getMainImage().orElse(null)}"><img th:if="${mainImage != null}" th:src="@{/car_photo/{fileName}(fileName=${mainImage.fileName})}" class="card-img-top" alt="..."><img th:if="${mainImage == null}" th:src="@{/img/placeholder.png}" class="card-img-top" alt="..."></th:block>
+                    <th:block th:with="mainImage=${offer.getMainImage().orElse(null)}">
+                        <!-- ZMIANA: Dodano loading="lazy" -->
+                        <img th:if="${mainImage != null}" th:src="@{/car_photo/{fileName}(fileName=${mainImage.fileName})}" class="card-img-top" alt="..." loading="lazy">
+                        <img th:if="${mainImage == null}" th:src="@{${@systemSettingService.getDefaultOfferImageUrl()}}" class="card-img-top" alt="..." loading="lazy">
+                    </th:block>
                     <div th:if="${offer.status?.name() == 'ZAREZERWOWANY' or offer.status?.name() == 'SPRZEDANY'}" class="status-overlay" th:text="${offer.status.displayName}"></div>
                 </div>
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title" th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></h5>
                     <p class="card-text text-muted" th:text="${offer.rok}"></p>
-                    <h6 class="price mt-auto" th:text="${{offer.cena}}"></h6>
+                    <th:block th:if="${offer.status?.name() == 'SPRZEDANY'}"><h6 class="price mt-auto text-danger">Sprzedany</h6></th:block>
+                    <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}"><h6 class="price mt-auto" th:text="${{offer.cena}}"></h6></th:block>
                     <a th:href="@{/offers/{id}(id=${offer.id})}" class="btn btn-outline-primary mt-2">Zobacz Szczegóły</a>
                 </div>
             </div>
         </div>
-        <div th:if="${offers.isEmpty()}" class="col-12"><div class="alert alert-warning text-center">Brak ofert spełniających podane kryteria.</div></div>
+        <div th:if="${offersPage.empty}" class="col-12"><div class="alert alert-warning text-center">Brak ofert spełniających podane kryteria.</div></div>
     </div>
-</main>
 
+    <nav th:if="${offersPage.totalPages > 1}" aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item" th:classappend="${offersPage.first} ? 'disabled'"><a class="page-link" th:href="@{/offers(page=${offersPage.number - 1},brandId=${filters.brandId})}">Poprzednia</a></li>
+            <li th:each="i : ${#numbers.sequence(0, offersPage.totalPages - 1)}" class="page-item" th:classappend="${i == offersPage.number} ? 'active'"><a class="page-link" th:href="@{/offers(page=${i},brandId=${filters.brandId})}" th:text="${i + 1}"></a></li>
+            <li class="page-item" th:classappend="${offersPage.last} ? 'disabled'"><a class="page-link" th:href="@{/offers(page=${offersPage.number + 1},brandId=${filters.brandId})}">Następna</a></li>
+        </ul>
+    </nav>
+</main>
 <div th:replace="~{/public/fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

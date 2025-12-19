@@ -1,5 +1,6 @@
 package pl.konkretnefury.konkretnefury.service;
 
+import net.coobird.thumbnailator.Thumbnails;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,47 +15,45 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    // ZMIANA: Odczyt ścieżek ze zmiennych środowiskowych
-    @Value("${FILE_UPLOAD_DIR_ICONS:/uploads/icons}")
+    @Value("${file.upload-dir.icons}")
     private String iconUploadDir;
 
-    @Value("${FILE_UPLOAD_DIR_CARS:/uploads/car_photos}")
+    @Value("${file.upload-dir.cars}")
     private String carPhotoUploadDir;
 
     public String storeIcon(MultipartFile file) {
-        if (file == null || file.isEmpty()) return null;
-        try {
-            String extension = FilenameUtils.getExtension(file.getOriginalFilename());
-            String uniqueFileName = UUID.randomUUID().toString() + "." + extension;
-            Path uploadPath = Paths.get(iconUploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
-            Path filePath = uploadPath.resolve(uniqueFileName);
-            Files.copy(file.getInputStream(), filePath);
-            return "/uploads/icons/" + uniqueFileName;
-        } catch (IOException e) {
-            throw new RuntimeException("Could not store the icon file. Error: " + e.getMessage());
-        }
+        return storeAndOptimize(file, iconUploadDir, null, 200, "webp");
     }
 
     public String storeCarPhoto(MultipartFile file, UUID offerId) {
+        String folderName = offerId.toString();
+        return storeAndOptimize(file, carPhotoUploadDir, folderName, 1200, "webp");
+    }
+
+    private String storeAndOptimize(MultipartFile file, String baseDir, String subDir, int targetWidth, String outputFormat) {
         if (file == null || file.isEmpty()) return null;
+
         try {
-            String extension = FilenameUtils.getExtension(file.getOriginalFilename());
-            String uniqueFileName = UUID.randomUUID().toString() + "." + extension;
+            // ZMIANA: Nowa nazwa pliku będzie miała rozszerzenie .webp
+            String newFileName = UUID.randomUUID().toString() + "." + outputFormat;
             
-            Path offerUploadPath = Paths.get(carPhotoUploadDir).resolve(offerId.toString());
-            if (!Files.exists(offerUploadPath)) {
-                Files.createDirectories(offerUploadPath);
-            }
+            Path uploadDir = (subDir != null) ? Paths.get(baseDir, subDir) : Paths.get(baseDir);
+            Files.createDirectories(uploadDir);
+            
+            Path filePath = uploadDir.resolve(newFileName);
 
-            Path filePath = offerUploadPath.resolve(uniqueFileName);
-            Files.copy(file.getInputStream(), filePath);
+            // ZMIANA: Logika optymalizacji
+            Thumbnails.of(file.getInputStream())
+                    .size(targetWidth, targetWidth) // Zmiana rozmiaru do max 1200px szerokości/wysokości
+                    .outputFormat(outputFormat)     // Konwersja do WebP
+                    .outputQuality(0.85)            // Kompresja na poziomie 85%
+                    .toFile(filePath.toFile());
 
-            return offerId.toString() + "/" + uniqueFileName;
+            // Zwracamy ścieżkę relatywną
+            return (subDir != null) ? subDir + "/" + newFileName : newFileName;
+
         } catch (IOException e) {
-            throw new RuntimeException("Could not store the car photo. Error: " + e.getMessage());
+            throw new RuntimeException("Could not store and optimize the file. Error: " + e.getMessage());
         }
     }
 }

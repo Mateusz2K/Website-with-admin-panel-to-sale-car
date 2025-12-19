@@ -1,5 +1,6 @@
 package pl.konkretnefury.konkretnefury.Controller;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -20,7 +21,7 @@ public class AdminOfferController {
 
     private final CarOfferService carOfferService;
     private final BrandService brandService;
-    private final CarOptionService carOptionService; // NOWA ZALEŻNOŚĆ
+    private final CarOptionService carOptionService;
 
     public AdminOfferController(CarOfferService carOfferService, BrandService brandService, CarOptionService carOptionService) {
         this.carOfferService = carOfferService;
@@ -28,45 +29,41 @@ public class AdminOfferController {
         this.carOptionService = carOptionService;
     }
 
+    // ZMIANA: Metoda przyjmuje Pageable i przekazuje obiekt Page do widoku
     @GetMapping
-    public String listOffers(@ModelAttribute("filters") OfferFilterDTO filters, Model model) {
-        model.addAttribute("offers", carOfferService.findWithFilters(filters));
+    public String listOffers(@ModelAttribute("filters") OfferFilterDTO filters, Model model, Pageable pageable) {
+        model.addAttribute("offersPage", carOfferService.findWithFilters(filters, pageable));
         model.addAttribute("brands", brandService.getAllBrands());
         return "admin/offers/offer-list-admin";
     }
 
+    // ... reszta bez zmian ...
     @GetMapping("/new")
     public String newOfferForm(Model model) {
         model.addAttribute("offer", new CarOffer());
         model.addAttribute("brands", brandService.getAllBrands());
-        model.addAttribute("allOptions", carOptionService.findAll()); // DODANO
+        model.addAttribute("allOptions", carOptionService.findAll());
         return "admin/offers/offer-form";
     }
-
     @GetMapping("/edit/{id}")
     public String editOfferForm(@PathVariable UUID id, Model model) {
         Optional<CarOffer> offerOptional = carOfferService.getOfferById(id);
-        if (offerOptional.isEmpty()) {
-            return "redirect:/admin/offers";
-        }
+        if (offerOptional.isEmpty()) { return "redirect:/admin/offers"; }
         model.addAttribute("offer", offerOptional.get());
         model.addAttribute("brands", brandService.getAllBrands());
-        model.addAttribute("allOptions", carOptionService.findAll()); // DODANO
+        model.addAttribute("allOptions", carOptionService.findAll());
         return "admin/offers/offer-form";
     }
-
     @PostMapping
     public String saveOffer(@ModelAttribute("offer") CarOffer offer, BindingResult result, @RequestParam("images") MultipartFile[] images, Model model) {
         if (result.hasErrors()) {
             model.addAttribute("brands", brandService.getAllBrands());
-            model.addAttribute("allOptions", carOptionService.findAll()); // DODANO
+            model.addAttribute("allOptions", carOptionService.findAll());
             return "admin/offers/offer-form";
         }
         carOfferService.saveOfferWithImages(offer, images);
         return "redirect:/admin/offers";
     }
-
-    // ... reszta bez zmian ...
     @GetMapping("/delete/{id}")
     public String deleteOffer(@PathVariable UUID id) { carOfferService.deleteOffer(id); return "redirect:/admin/offers"; }
     @GetMapping("/toggle-featured/{id}")

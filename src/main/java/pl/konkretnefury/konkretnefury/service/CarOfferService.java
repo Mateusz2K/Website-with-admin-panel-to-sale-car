@@ -4,6 +4,7 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -46,13 +47,11 @@ public class CarOfferService {
     public void saveOfferWithImages(CarOffer offerFromForm, MultipartFile[] images) {
         CarOffer offerToSave;
         if (offerFromForm.getId() != null) {
-            offerToSave = carOfferRepository.findById(offerFromForm.getId())
-                    .orElseThrow(() -> new EntityNotFoundException("Not found"));
+            offerToSave = carOfferRepository.findById(offerFromForm.getId()).orElseThrow(() -> new EntityNotFoundException("Not found"));
             updateOfferFields(offerToSave, offerFromForm);
         } else {
             offerToSave = offerFromForm;
         }
-
         if (images != null && images.length > 0) {
             boolean hasMainImage = offerToSave.getZdjęcia().stream().anyMatch(CarOfferImage::isMain);
             for (int i = 0; i < images.length; i++) {
@@ -86,8 +85,14 @@ public class CarOfferService {
         existingOffer.setPojemonscSilnika(formOffer.getPojemonscSilnika());
         existingOffer.setOpis(formOffer.getOpis());
         existingOffer.setFeatured(formOffer.isFeatured());
-        // ZMIANA: Dodano brakującą aktualizację opcji wyposażenia
         existingOffer.setOptions(formOffer.getOptions());
+        existingOffer.setKrajPochodzenia(formOffer.getKrajPochodzenia());
+        existingOffer.setKolor(formOffer.getKolor());
+        // ZMIANA: Aktualizacja pola opisu gwarancji
+        existingOffer.setGwarancjaOpis(formOffer.getGwarancjaOpis());
+        existingOffer.setSkrzyniaBiegow(formOffer.getSkrzyniaBiegow());
+        existingOffer.setTypPojazdu(formOffer.getTypPojazdu());
+        existingOffer.setNaped(formOffer.getNaped());
     }
 
     @Transactional
@@ -105,19 +110,21 @@ public class CarOfferService {
         carOfferRepository.deleteById(id);
     }
     
-    public List<CarOffer> findWithFilters(OfferFilterDTO filters) {
-        return carOfferRepository.findAll((Specification<CarOffer>) (root, query, cb) -> {
+    public Page<CarOffer> findWithFilters(OfferFilterDTO filters, Pageable pageable) {
+        Specification<CarOffer> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (filters.getBrandId() != null) predicates.add(cb.equal(root.get("brand").get("id"), filters.getBrandId()));
             if (filters.getPriceFrom() != null) predicates.add(cb.greaterThanOrEqualTo(root.get("cena"), filters.getPriceFrom()));
             if (filters.getPriceTo() != null) predicates.add(cb.lessThanOrEqualTo(root.get("cena"), filters.getPriceTo()));
             if (filters.getYearFrom() != null) predicates.add(cb.greaterThanOrEqualTo(root.get("rok"), filters.getYearFrom()));
             if (filters.getYearTo() != null) predicates.add(cb.lessThanOrEqualTo(root.get("rok"), filters.getYearTo()));
+            if (filters.getTypNadwozia() != null) predicates.add(cb.equal(root.get("rodzajNadwozia"), filters.getTypNadwozia()));
             return cb.and(predicates.toArray(new Predicate[0]));
-        });
+        };
+        return carOfferRepository.findAll(spec, pageable);
     }
     public List<CarOffer> getAllOffers() { return carOfferRepository.findAll(); }
-    public Optional<CarOffer> getOfferById(UUID id) { return carOfferRepository.findById(id); }
+    public Optional<CarOffer> getOfferById(UUID id) { return carOfferRepository.findById(id);}
     @Transactional
     public void changeStatusOfOffer(UUID id, String status) {
         CarOffer offer = carOfferRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found"));

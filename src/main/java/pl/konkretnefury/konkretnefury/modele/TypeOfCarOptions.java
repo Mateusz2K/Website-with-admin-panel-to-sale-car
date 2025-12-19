@@ -2,9 +2,11 @@ package pl.konkretnefury.konkretnefury.modele;
 
 public enum TypeOfCarOptions {
     BEZPIECZENSTWO("Bezpieczeństwo"),
-    KOMFORT("Komfort"),
-    MULTIMEDIA("Multimedia"),
+    KOMFORT_I_DODOATKI("Komfort i dodatki"),
+    MULTIMEDIA("Audio i multimedia"),
     WYGLAD_ZEWNETRZNY("Wygląd zewnętrzny"),
+    OSWIETLENIE("Oświetlenie"),
+    NADWOZIE("Nadwozie"),
     INNE("Inne");
 
     private final String displayName;
