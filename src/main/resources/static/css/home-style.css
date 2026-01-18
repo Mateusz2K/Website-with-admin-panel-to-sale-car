@@ -1,35 +1,4 @@
-/* home-style.css */
-
-body {
-    padding-top: 56px; /* Wysokość paska nawigacji, aby treść nie była pod nim ukryta */
-}
-
-/* --- Sekcja Hero --- */
-.hero-section {
-    position: relative;
-    height: 60vh;
-    background-image: url('https://images.unsplash.com/photo-1553440569-bcc63803a840?q=80&w=2071&auto=format&fit=crop');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed; /* Efekt paralaksy */
-    color: white;
-}
-
-.hero-section::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5); /* Przyciemnienie tła dla lepszej czytelności tekstu */
-    z-index: 1;
-}
-
-.hero-section .container {
-    position: relative;
-    z-index: 2;
-}
+/* home-style.css - Style TYLKO dla kart ofert */
 
 /* --- Sekcja Promowanych Ofert --- */
 .featured-offers {
@@ -48,36 +17,28 @@ body {
 
 .offer-card .card-img-top {
     height: 200px;
-    object-fit: cover; /* Zapewnia, że obrazki są dobrze dopasowane */
+    object-fit: cover;
 }
 
 .offer-card .price {
     font-size: 1.25rem;
     font-weight: bold;
-    color: #0d6efd; /* Kolor główny Bootstrapa */
+    color: #0d6efd;
 }
 
-/* --- Stopka --- */
-footer {
-    border-top: 3px solid #0d6efd;
-}
-
-/* --- NOWE STYLE DLA MASKI "SPRZEDANY/ZAREZERWOWANY" --- */
-
-/* 1. Kontener dla obrazka, który będzie "kotwicą" dla naszej maski */
+/* --- Maska "SPRZEDANY/ZAREZERWOWANY" --- */
 .card-img-container {
     position: relative;
     overflow: hidden;
 }
 
-/* 2. Maska (overlay) */
 .status-overlay {
     position: absolute;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.6); /* Półprzezroczyste czarne tło */
+    background-color: rgba(0, 0, 0, 0.6);
     color: white;
     display: flex;
     align-items: center;
@@ -87,5 +48,5 @@ footer {
     text-transform: uppercase;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
     z-index: 10;
-    pointer-events: none; /* Pozwala na klikanie linków pod maską */
+    pointer-events: none;
 }

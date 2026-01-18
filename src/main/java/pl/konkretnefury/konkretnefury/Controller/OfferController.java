@@ -22,7 +22,7 @@ public class OfferController {
 
     private final CarOfferService carOfferService;
     private final BrandService brandService;
-    private final SystemSettingService settingService; // NOWA ZALEŻNOŚĆ
+    private final SystemSettingService settingService;
 
     public OfferController(CarOfferService carOfferService, BrandService brandService, SystemSettingService settingService) {
         this.carOfferService = carOfferService;
@@ -32,10 +32,13 @@ public class OfferController {
 
     @GetMapping
     public String listAllOffers(@ModelAttribute("filters") OfferFilterDTO filters, Model model, Pageable pageable) {
+        long activeOffers = carOfferService.countActiveOffers();
+        model.addAttribute("activeOffers", activeOffers);
+        model.addAttribute("featuredOffers", carOfferService.getFeaturedOffers());
         model.addAttribute("offersPage", carOfferService.findWithFilters(filters, pageable));
         model.addAttribute("brands", brandService.getAllBrands());
-        // ZMIANA: Przekazanie domyślnej grafiki do widoku
         model.addAttribute("defaultImageUrl", settingService.getDefaultOfferImageUrl());
+        model.addAttribute("activePage", "offers");
         return "offers/offer-list";
     }
 
@@ -46,8 +49,11 @@ public class OfferController {
             return "redirect:/offers";
         }
         model.addAttribute("offer", offerOptional.get());
-        // ZMIANA: Przekazanie domyślnej grafiki do widoku
         model.addAttribute("defaultImageUrl", settingService.getDefaultOfferImageUrl());
+        model.addAttribute("activePage", "offers");
         return "offers/offer-details";
     }
+
+
+
 }

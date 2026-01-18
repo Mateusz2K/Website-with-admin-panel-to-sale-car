@@ -3,8 +3,42 @@
 <body>
 
 <!-- Fragment publicznej stopki -->
-<footer class="bg-dark text-white text-center p-4" th:fragment="footer">
-    <p>&copy; 2024 Konkretne Fury. Wszelkie prawa zastrzeżone.</p>
+<footer class="footer-dark">
+    <div class="container">
+        <div class="d-flex flex-wrap justify-content-between align-items-center py-4 mt-4 border-top">
+            <div class="col-12 text-center">
+                <a th:href="@{/}"><img th:src="@{/photo/autokonkret_whjite_alpha_mini.png}" alt="logo" ></a>
+                <div class="col-12 text-center my-4">
+                    <ul class="list-inline mb-0">
+                        <li class="list-inline-item">
+                            <a th:href="@{/}" class="footer-link active">Home</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a th:href="@{/onas}" class="footer-link">O Nas</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a th:href="@{/offers}" class="footer-link">Oferta</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a th:href="@{/kontakt} " class="footer-link">Kontakt</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a th:href="@{/blog}" class="footer-link">Aktualności</a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a th:href="@{/galeria}" class="footer-link">Galeria</a>
+                        </li>
+                    </ul>
+                </div>
+                <p class="mb-3">
+                    Znajdź swoje idealne auto z nami. Oferujemy szeroką gamę pojazdów dostosowanych do Twoich potrzeb.
+                </p>
+                <p class="copyright">Autokonkret © 2025</p>
+                <p class="italic">Powered By Mateusz Kołecki</p>
+            </div>
+
+        </div>
+    </div>
 </footer>
 
 </body>

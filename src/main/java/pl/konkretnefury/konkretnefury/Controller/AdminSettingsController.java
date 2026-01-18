@@ -22,12 +22,28 @@ public class AdminSettingsController {
     @GetMapping
     public String settingsPage(Model model) {
         model.addAttribute("defaultOfferImageUrl", settingService.getDefaultOfferImageUrl());
+        model.addAttribute("defaultWarrantyDescription", settingService.getDefaultWarrantyDescription());
+        // ZMIANA: Przekazanie domyślnego opisu
+        model.addAttribute("defaultOfferDescription", settingService.getDefaultOfferDescription());
         return "admin/settings/settings-page";
     }
 
     @PostMapping("/upload-default-image")
     public String uploadDefaultImage(@RequestParam("defaultImage") MultipartFile file) {
         settingService.saveDefaultOfferImage(file);
+        return "redirect:/admin/settings";
+    }
+
+    @PostMapping("/save-warranty")
+    public String saveWarrantyDescription(@RequestParam("warrantyDescription") String description) {
+        settingService.saveDefaultWarrantyDescription(description);
+        return "redirect:/admin/settings";
+    }
+
+    // ZMIANA: Endpoint do zapisu domyślnego opisu
+    @PostMapping("/save-description")
+    public String saveOfferDescription(@RequestParam("offerDescription") String description) {
+        settingService.saveDefaultOfferDescription(description);
         return "redirect:/admin/settings";
     }
 }

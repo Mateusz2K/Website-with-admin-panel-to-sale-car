@@ -11,7 +11,10 @@ import java.util.List;
 @Repository
 public interface BlogPostRepo extends JpaRepository<BlogPost, Long> {
 
-    @Query("SELECT bp FROM BlogPost bp ORDER BY bp.dataPublikacji DESC NULLS LAST")
+    // ZMIANA: Poprawiona składnia dla MySQL
+    @Query("SELECT bp FROM BlogPost bp ORDER BY CASE WHEN bp.dataPublikacji IS NULL THEN 1 ELSE 0 END, bp.dataPublikacji DESC")
     List<BlogPost> findRecentPosts(Pageable pageable);
+
+    List<BlogPost> findTop5ByOrderByDataPublikacjiDesc();
 
 }

@@ -10,22 +10,56 @@
 <div th:replace="~{admin/fragments/navigation :: navbar}"></div>
 <main class="container mt-4">
     <h1 class="h2 mb-4">Ustawienia Strony</h1>
-    <div class="form-container">
-        <h3 class="h5">Domyślna grafika dla ofert</h3>
-        <p>Ta grafika będzie wyświetlana, gdy oferta nie ma żadnych zdjęć.</p>
 
-        <div class="mb-3">
-            <p><strong>Aktualny podgląd:</strong></p>
-            <img th:src="@{${defaultOfferImageUrl}}" alt="Domyślna grafika" style="max-width: 300px; border: 1px solid #ddd; padding: 5px;">
+    <div class="row">
+        <div class="col-md-6">
+            <div class="form-container mb-4">
+                <h3 class="h5">Domyślna grafika dla ofert</h3>
+                <p>Ta grafika będzie wyświetlana, gdy oferta nie ma żadnych zdjęć.</p>
+
+                <div class="mb-3">
+                    <p><strong>Aktualny podgląd:</strong></p>
+                    <img th:src="@{${defaultOfferImageUrl}}" alt="Domyślna grafika" style="max-width: 300px; border: 1px solid #ddd; padding: 5px;">
+                </div>
+
+                <form th:action="@{/admin/settings/upload-default-image}" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="defaultImage" class="form-label">Wgraj nową grafikę</label>
+                        <input type="file" class="form-control" id="defaultImage" name="defaultImage" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Zapisz grafikę</button>
+                </form>
+            </div>
         </div>
 
-        <form th:action="@{/admin/settings/upload-default-image}" method="post" enctype="multipart/form-data">
-            <div class="mb-3">
-                <label for="defaultImage" class="form-label">Wgraj nową grafikę</label>
-                <input type="file" class="form-control" id="defaultImage" name="defaultImage" required>
+        <div class="col-md-6">
+            <div class="form-container mb-4">
+                <h3 class="h5">Domyślna Gwarancja</h3>
+                <p>Ten tekst będzie automatycznie wpisywany przy tworzeniu nowej oferty.</p>
+
+                <form th:action="@{/admin/settings/save-warranty}" method="post">
+                    <div class="mb-3">
+                        <label for="warrantyDescription" class="form-label">Treść gwarancji</label>
+                        <textarea class="form-control" id="warrantyDescription" name="warrantyDescription" rows="4" th:text="${defaultWarrantyDescription}"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Zapisz treść</button>
+                </form>
             </div>
-            <button type="submit" class="btn btn-primary">Zapisz</button>
-        </form>
+
+            <!-- ZMIANA: Nowa sekcja dla domyślnego opisu -->
+            <div class="form-container">
+                <h3 class="h5">Domyślny Opis Oferty</h3>
+                <p>Ten tekst będzie automatycznie wpisywany do pola "Opis" przy tworzeniu nowej oferty.</p>
+
+                <form th:action="@{/admin/settings/save-description}" method="post">
+                    <div class="mb-3">
+                        <label for="offerDescription" class="form-label">Treść opisu</label>
+                        <textarea class="form-control" id="offerDescription" name="offerDescription" rows="4" th:text="${defaultOfferDescription}"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Zapisz opis</button>
+                </form>
+            </div>
+        </div>
     </div>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

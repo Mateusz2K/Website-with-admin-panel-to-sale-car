@@ -1,0 +1,501 @@
+:root {
+  --bluelogo: rgb(29, 98, 199);
+  --alpha: 0.4;
+  --footer-bg-color: #282d32;
+  --footer-link-color: #f0f9ff;
+  --footer-link-hover-opacity: 0.8;
+}
+
+/* Ogólne */
+* {
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body {
+    min-width: 101%;
+  color: #000;
+  overflow-x: hidden;
+}
+.ken {
+
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  z-index: -1;
+  background: url('photo/BMW_backgr.jpeg') center center / cover no-repeat;
+  transform: scale(2);
+  animation: zoomOut 20s ease-in-out infinite alternate;
+  transform-origin: center center;
+}
+
+@keyframes zoomOut {
+  from{
+    transform: scale(2);
+  }to{
+    transform: scale(1);
+  }
+}
+.linia{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  width: 50%;
+  margin: 0 auto;
+  border-radius: 10px;
+
+}
+.linia h1{
+  color: white;
+}
+.linia img{
+  height: 100px;
+  margin: 0 10px;
+  padding: 10px;
+
+
+}
+
+/* Nagłówek */
+header a img {
+  padding: 10px;
+  height: 100px;
+}
+
+/* Menu */
+#menu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 100px;
+  padding: 0 5%;
+  position: sticky;
+  top: 0;
+  background-color: black;
+  font-size: 2ex;
+  z-index: 100;
+}
+
+#menu nav {
+  display: flex;
+  gap: 10px;
+}
+
+#menu nav a {
+  padding: 8px 15px;
+  border-radius: 10px;
+  transition: 0.3s;
+}
+
+#menu .content-menu a.active,
+#menu .content-menu a:hover, .footer-dark > .active {
+  background-color: var(--bluelogo);
+}
+
+#menu .content-menu:hover a.active:not(:hover) {
+  background: none;
+}
+
+/* Ukrywane menu i ikony */
+.content-menu {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: black;
+  padding: 10px 15px;
+}
+
+.icnmenu {
+  display: none; /* Domyślnie ukryta na dużych ekranach */
+  cursor: pointer;
+}
+
+.bar {
+  width: 30px;
+  height: 4px;
+  background-color: white;
+  margin: 5px 0;
+  border-radius: 2px;
+}
+
+/* Menu na dużych ekranach */
+.hidden-dropdown-content {
+  display: flex;
+  flex-direction: row;
+  list-style: none;
+  position: static;
+  gap: 15px;
+  z-index: 100;
+
+
+}
+
+.hidden-dropdown-content li a {
+  text-decoration: none;
+  color: white;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
+.hidden-dropdown-content li a:hover {
+  background-color: var(--bluelogo);
+}
+
+/* Linki */
+a:visited,
+a:link {
+  text-decoration: none;
+  color: white;
+}
+hero{
+    min-height: 100dvh;
+}
+.btn-primary {
+  background-color: #1d62c7 !important;
+  border-color: #1d62c7 !important;
+  color: white !important;
+}
+.btn-primary:hover {
+  background-color: #1554a3 !important;
+  border-color: #1554a3 !important;
+}
+
+/* Sekcja kontenera */
+#container nav ul li {
+  display: inline-block;
+  text-decoration: none;
+  padding: 10px auto;
+  margin: 0 10px;
+}
+
+/* Treść */
+.content {
+  background-color: rgba(255, 255, 255, 0.50);
+  color: black;
+  margin: 10px 20px;
+  border-radius: 10px;
+  border-style: solid;
+  border-width: 1px;
+  padding: 40px;
+}
+
+.content:nth-child(2n) {
+  background-color: rgb(29, 98, 199,0.7);
+}
+
+h2 {
+  margin-top: 10px;
+  margin-left: 20px;
+  color: black;
+}
+.social-media {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+/* Sekcja Facebook */
+.fb-content {
+  display: flex;
+  align-items: flex-start;
+  min-width: 500px;
+  position: relative;
+  gap: 30px;
+}
+
+.fb-page {
+  min-width: 500px;
+  z-index: 10;
+  border-radius: 10px;
+}
+
+.fb-welcome {
+  text-align: center;
+  font-size: 1.2em;
+  background-color: #f0f9ff;
+  border-radius: 10px;
+  min-height: 330px;
+  height: auto;
+}
+
+.fb-welcome > p {
+  margin: 20px 10px;
+}
+.tiktok-embed {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+.tiktok{
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+}
+
+/* Grid kontener */
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  margin: -15px;
+}
+
+.row > .col {
+  padding: 15px;
+}
+
+.item {
+  margin-bottom: 20px;
+}
+
+/* Stopka */
+.footer-dark {
+  background-color: var(--footer-bg-color);
+  color: var(--footer-link-color);
+  font-size: 14px;
+}
+
+.footer-dark h5 {
+  color: var(--footer-link-color);
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-transform: uppercase;
+}
+
+.footer-dark p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.footer-dark .footer-link {
+  color: var(--footer-link-color);
+  text-decoration: none;
+  margin: 0 10px;
+  transition: color 0.3s ease, opacity 0.3s ease;
+  opacity: 0.8;
+}
+
+.footer-dark .footer-link:hover {
+  color: var(--bluelogo);
+  opacity: 1;
+}
+
+.footer-dark .list-inline {
+  margin-bottom: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.footer-dark .copyright {
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 20px;
+  font-size: 13px;
+}
+
+.footer-dark img {
+  display: block;
+  width: 200px;
+  margin: 0 auto 20px auto; /* Dodane */
+}
+.gallery_container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  padding: 20px;
+}
+.gallery_container img {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+.gallery img {
+  width: 100%;
+  height: auto;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+/* Galeria */
+.gallery {
+  display: flex;
+  overflow-x: scroll; /* Dodane */
+  gap: 10px;
+  padding: 10px;
+  scroll-snap-type: x mandatory; /* Dodane */
+}
+
+.gallery img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  object-fit: cover;
+  scroll-snap-align: start; /* Dodane */
+}
+
+/* Ukrycie paska przewijania */
+.gallery::-webkit-scrollbar {
+  display: none; /* Dodane */
+}
+
+.gallery {
+  -ms-overflow-style: none;  /* Dodane */
+  scrollbar-width: none;  /* Dodane */
+}
+.gallery-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+.gallery-button{
+
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  padding: 15px 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 0 10px;
+  transition: background-color 0.3s;
+}
+#about{
+  width: 90%;
+  height: auto;
+
+}
+
+
+/* Responsywność */
+@media only screen and (max-width: 1100px) {
+  .content-menu{
+    display: none;
+  }
+  .icnmenu {
+    display: block; /* Pokazuje ikonę menu */
+    cursor: pointer;
+    z-index: 100;
+}
+.linia{
+  width: 100%;
+}
+.ken{
+  background-size: 100%;
+}
+
+.hidden-dropdown-content {
+  display: none;
+  flex-direction: column;
+  position: fixed;
+  top: 90px;
+  right: 0;
+  background-color: black;
+  width: 250px;
+  padding: 20px;
+  z-index: 1000;
+  transition: transform 0.3s ease;
+  border-radius: 0 0 0 10px;
+  box-shadow: -5px 0 10px rgba(0,0,0,0.5);
+}
+
+.hidden-dropdown-content li {
+    text-align: center;
+}
+.fb-content{
+  position: relative;
+  z-index: 10;
+}
+
+
+.content-menu.active .hidden-dropdown-content {
+    display: flex; /* Pokazuje menu po kliknięciu */
+    animation: slideInFromRight 0.3s ease forwards;
+}
+.hidden-dropdown-content li {
+  text-align: right;
+  margin-bottom: 10px;
+}
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+}
+
+@media (max-width: 767px) {
+  body{
+    overflow-x: hidden;
+    font-size: 14px;
+  }
+  .ken{
+    background-size: cover;
+    transform: scale(2);
+  }
+  .linia{
+    width: 100%;
+  }
+  .social-media {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .fb-welcome{
+    min-height: 98%;
+  }
+
+  .footer-dark .item:not(.social) {
+      text-align: center;
+      padding-bottom: 20px;
+  }
+  .content {
+    margin: 10px auto;
+    width: 90%; /* Dopasowuje szerokość do mniejszych ekranów */
+    }
+
+  .footer-dark .item.text {
+      margin-bottom: 0;
+  }
+
+  .footer-dark .item.social {
+      text-align: center;
+      margin-top: 20px;
+  }
+  .content > .fb-content {
+    max-width: 80%;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+
+ .contents {
+    display: flex;
+    flex-direction: column;
+  }
+    .footer-dark .text-md-start,
+    .footer-dark .text-md-end {
+        text-align: center;
+    }
+    .gallery{
+      scrollbar-width: thin;
+    }
+    .gallery-button{
+      display: none;
+    }
+}

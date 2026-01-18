@@ -3,40 +3,111 @@
 <head>
     <meta charset="UTF-8">
     <title th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></title>
+    <meta name="author" content="Mateusz Kołecki">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/style.css}">
     <link rel="stylesheet" th:href="@{/css/home-style.css}">
+
+    <style>
+        .thumbnail-indicators img {
+            width: 100px;
+            height: 75px;
+            object-fit: cover;
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s;
+            border: 2px solid transparent;
+        }
+        .thumbnail-indicators img:hover {
+            opacity: 1;
+        }
+        /* Styl dla aktywnej miniaturki */
+        .thumbnail-indicators .active img {
+            opacity: 1;
+            border-color: #0d6efd; /* Kolor primary Bootstrapa */
+        }
+        /* Styl dla kursora na głównym zdjęciu */
+        .carousel-item img {
+            cursor: zoom-in;
+        }
+    </style>
 </head>
 <body>
 <div th:replace="~{/public/fragments/navigation :: navbar}"></div>
 <main class="container mt-5 py-5">
     <div class="row">
         <div class="col-lg-8">
-            <h1 th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></h1>
-            <h2 class="h4 text-muted mb-4" th:text="${offer.rok}"></h2>
-            <div id="photoCarousel" class="carousel slide shadow-lg rounded overflow-hidden mb-4" >
+            <h1 class="d-flex align-items-center">
+                <img th:if="${offer.brand?.iconUrl != null}" th:src="@{${offer.brand.iconUrl}}" alt="Logo marki" class="me-3" style="height: 50px; width: auto; object-fit: contain;">
+                <span th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></span>
+            </h1>
+
+            <p class="text-muted mb-4">
+                <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span> &bull;
+                <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span> &bull;
+                <span th:if="${offer.skrzyniaBiegow != null}" th:text="${offer.skrzyniaBiegow.displayName}"></span> &bull;
+                <span th:if="${offer.rodzajPaliwa != null}" th:text="${offer.rodzajPaliwa.displayName}"></span>
+            </p>
+
+            <!-- Główna karuzela -->
+            <div id="photoCarousel" class="carousel slide shadow-lg rounded overflow-hidden mb-2">
                 <div class="carousel-inner">
                     <div th:if="${offer.zdjęcia.isEmpty()}"><img th:src="@{${@systemSettingService.getDefaultOfferImageUrl()}}" class="d-block w-100" alt="..." loading="lazy"></div>
-                    <!-- ZMIANA: Dodano loading="lazy" -->
-                    <div th:each="image, iterStat : ${offer.zdjęcia}" class="carousel-item" th:classappend="${iterStat.first ? 'active' : ''}"><img th:src="@{/car_photo/{imageName}(imageName=${image.fileName})}" class="d-block w-100" alt="..." loading="lazy"></div>
+                    <!-- ZMIANA: Dodano onclick do otwierania modala -->
+                    <div th:each="image, iterStat : ${offer.zdjęcia}" class="carousel-item" th:classappend="${iterStat.first ? 'active' : ''}">
+                        <img th:src="@{/car_photo/{imageName}(imageName=${image.fileName})}"
+                             class="d-block w-100"
+                             alt="..."
+                             loading="lazy"
+                             onclick="openLightbox(this.src)">
+                    </div>
                 </div>
                 <button th:if="${offer.zdjęcia.size() > 1}" class="carousel-control-prev" type="button" data-bs-target="#photoCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
                 <button th:if="${offer.zdjęcia.size() > 1}" class="carousel-control-next" type="button" data-bs-target="#photoCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
             </div>
+
+            <!-- Miniaturki -->
+            <div th:if="${offer.zdjęcia.size() > 1}" class="d-flex justify-content-center flex-wrap gap-2 thumbnail-indicators mb-5" id="thumbnailContainer">
+                <button th:each="image, iterStat : ${offer.zdjęcia}"
+                        type="button"
+                        th:data-bs-target="'#photoCarousel'"
+                        th:data-bs-slide-to="${iterStat.index}"
+                        th:classappend="${iterStat.first ? 'active' : ''}"
+                        class="p-0 border-0 bg-transparent thumbnail-btn">
+                    <img th:src="@{/car_photo/{imageName}(imageName=${image.fileName})}" alt="Miniaturka" loading="lazy">
+                </button>
+            </div>
+
+            <!-- ... reszta sekcji (opis, gwarancja, wyposażenie) bez zmian ... -->
             <div class="row mt-5">
                 <div class="col-12">
-                    <h3>Opis</h3>
-                    <p th:text="${offer.opis}"></p>
+                    <h3 class="border-bottom pb-2 mb-3">Opis Pojazdu</h3>
+                    <p th:text="${offer.opis}" style="white-space: pre-line;"></p>
                 </div>
             </div>
+
+            <div class="row mt-5" th:if="${offer.gwarancjaOpis != null and !offer.gwarancjaOpis.isEmpty()}">
+                <div class="col-12">
+                    <div class="card bg-light border-success">
+                        <div class="card-body">
+                            <h4 class="card-title text-success"><i class="fas fa-shield-alt"></i> Gwarancja</h4>
+                            <p class="card-text" th:text="${offer.gwarancjaOpis}"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="row mt-5" th:if="${!offer.options.isEmpty()}">
                 <div class="col-12">
-                    <h3>Wyposażenie</h3>
+                    <h3 class="border-bottom pb-2 mb-3">Wyposażenie</h3>
                     <div class="row">
-                        <div th:each="category : ${T(pl.konkretnefury.konkretnefury.modele.TypeOfCarOptions).values()}" class="col-md-4 mb-3">
+                        <div th:each="category : ${T(pl.konkretnefury.konkretnefury.modele.TypeOfCarOptions).values()}" class="col-md-6 mb-4">
                             <div th:if="${!offer.options.?[category == #root.category].isEmpty()}">
-                                <h5 class="mt-2" th:text="${category.displayName}"></h5>
-                                <ul class="list-unstyled">
-                                    <li th:each="option : ${offer.options.?[category == #root.category]}" th:text="${option.name}"></li>
+                                <h5 class="text-primary mb-3" th:text="${category.displayName}"></h5>
+                                <ul class="list-group list-group-flush">
+                                    <li class="list-group-item bg-transparent ps-0" th:each="option : ${offer.options.?[category == #root.category]}">
+                                        <i class="fas fa-check text-success me-2"></i> <span th:text="${option.name}"></span>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -44,36 +115,100 @@
                 </div>
             </div>
         </div>
+
         <div class="col-lg-4">
-            <div class="card sticky-top" style="top: 100px;">
+            <div class="card sticky-top shadow-sm" style="top: 100px; z-index: -1">
                 <div class="card-body">
-                    <th:block th:if="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title text-danger">Oferta nieaktualna</h3></th:block>
-                    <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title price" th:text="${{offer.cena}}"></h3></th:block>
-                    <hr>
+                    <th:block th:if="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title text-danger text-center mb-4">Oferta nieaktualna</h3></th:block>
+                    <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title price text-center mb-4" th:text="${@priceFormatter.print(offer.cena, #locale)}"></h3></th:block>
+
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between"><strong>Marka:</strong> <span th:text="${offer.brand?.nazwaMarki}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Model:</strong> <span th:text="${offer.model?.model}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between"><strong>Rocznik:</strong> <span th:text="${offer.rok}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between"><strong>Przebieg:</strong> <span th:text="${{offer.przebieg}}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between"><strong>Pojemność:</strong> <span th:text="${{offer.pojemonscSilnika}}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between"><strong>Moc:</strong> <span th:text="${{offer.moc}}"></span></li>
+
+                        <!-- ZMIANA: Użycie beana yearFormatter -->
+                        <li class="list-group-item d-flex justify-content-between"><strong>Rok produkcji:</strong> <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span></li>
+
+                        <!-- ZMIANA: Użycie beana mileageFormatter -->
+                        <li class="list-group-item d-flex justify-content-between"><strong>Przebieg:</strong> <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span></li>
+                        <li class="list-group-item d-flex justify-content-between"><strong>Pojemność:</strong> <span th:text="${@volumeFormatter.print(offer.pojemonscSilnika, #locale)}"></span></li>
+                        <li class="list-group-item d-flex justify-content-between"><strong>Moc:</strong> <span th:text="${@powerFormatter.print(offer.moc, #locale)}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajPaliwa != null}"><strong>Paliwo:</strong> <span th:text="${offer.rodzajPaliwa.displayName}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajNadwozia != null}"><strong>Nadwozie:</strong> <span th:text="${offer.rodzajNadwozia.displayName}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.kolor != null}"><strong>Kolor:</strong> <span th:text="${offer.kolor}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.KrajPochodzenia != null}"><strong>Kraj pochodzenia:</strong> <span th:text="${offer.KrajPochodzenia}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.skrzyniaBiegow != null}"><strong>Skrzynia biegów:</strong> <span th:text="${offer.skrzyniaBiegow.displayName}"></span></li>
+
+                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajNadwozia != null}"><strong>Nadwozie:</strong> <span th:text="${offer.rodzajNadwozia.displayName}"></span></li>
+                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajNadwoziaCiezarowe != null}"><strong>Nadwozie:</strong> <span th:text="${offer.rodzajNadwoziaCiezarowe.displayName}"></span></li>
+                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.liczba_drzwi != null}"><strong>Liczba Drzwi:</strong> <span th:text="${offer.liczba_drzwi}"></span></li>
+                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.kolor != null}"><strong>Kolor:</strong> <span th:text="${offer.kolor}"></span></li>
+
+                        <!-- ZMIANA: Dodanie flagi obok kraju -->
+                        <li class="list-group-item d-flex justify-content-between align-items-center" th:if="${offer.krajPochodzenia != null}">
+                            <strong>Kraj:</strong>
+                            <span class="d-flex align-items-center">
+                                <img th:src="@{'https://flagcdn.com/w20/' + ${offer.krajPochodzenia.flagCode} + '.png'}"
+                                     th:alt="${offer.krajPochodzenia.displayName}"
+                                     class="me-2">
+                                <span th:text="${offer.krajPochodzenia.displayName}"></span>
+                            </span>
+                        </li>
+
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.naped != null}"><strong>Napęd:</strong> <span th:text="${offer.naped.displayName}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.typPojazdu != null}"><strong>Typ pojazdu:</strong> <span th:text="${offer.typPojazdu.displayName}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.gwarancjaOpis != null and !offer.gwarancjaOpis.isEmpty()}"><strong>Gwarancja:</strong> <span th:text="${offer.gwarancjaOpis}"></span></li>
+                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.typPojazdu != null}"><strong>Typ:</strong> <span th:text="${offer.typPojazdu.displayName}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Status:</strong> <span class="badge" th:classappend="${offer.status?.name() == 'DOSTĘPNY' ? 'bg-success' : 'bg-warning'}" th:text="${offer.status?.displayName}"></span></li>
                     </ul>
-                    <a href="#" class="btn btn-primary w-100 mt-3">Skontaktuj się</a>
+                    <a href="#" class="btn btn-primary w-100 mt-4 btn-lg">Skontaktuj się</a>
                 </div>
             </div>
         </div>
     </div>
 </main>
+
+<!-- ZMIANA: Modal Lightbox -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-body p-0 text-center position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close"></button>
+                <img id="lightboxImage" src="" class="img-fluid rounded" alt="Powiększone zdjęcie">
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{/public/fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- ZMIANA: Skrypt do obsługi galerii -->
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const carousel = document.getElementById('photoCarousel');
+        const thumbnails = document.querySelectorAll('.thumbnail-btn');
+
+        // Nasłuchuj zmiany slajdu w głównej karuzeli
+        carousel.addEventListener('slide.bs.carousel', function (event) {
+            const index = event.to; // Indeks nowego slajdu
+
+            // Usuń klasę active ze wszystkich miniaturek
+            thumbnails.forEach(thumb => thumb.classList.remove('active'));
+
+            // Dodaj klasę active do odpowiedniej miniaturki
+            if (thumbnails[index]) {
+                thumbnails[index].classList.add('active');
+                // Opcjonalnie: przewiń pasek miniaturek, jeśli jest długi
+                thumbnails[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+        });
+    });
+
+    // Funkcja otwierająca Lightbox
+    function openLightbox(src) {
+        const modalElement = document.getElementById('lightboxModal');
+        const modalImg = document.getElementById('lightboxImage');
+        const modal = new bootstrap.Modal(modalElement);
+
+        modalImg.src = src;
+        modal.show();
+    }
+</script>
 </body>
 </html>

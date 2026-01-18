@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,48 +34,58 @@ public class CarOfferService {
     private final CarOfferRepo carOfferRepository;
     private final CarOfferImageRepo carOfferImageRepository;
     private final FileStorageService fileStorageService;
+    private final CarOfferImageService carOfferImageService;
 
     @Value("${file.upload-dir.cars}")
     private String carPhotoUploadDir;
 
-    public CarOfferService(CarOfferRepo carOfferRepository, CarOfferImageRepo carOfferImageRepository, FileStorageService fileStorageService) {
+    public CarOfferService(CarOfferRepo carOfferRepository, CarOfferImageRepo carOfferImageRepository, FileStorageService fileStorageService, CarOfferImageService carOfferImageService) {
         this.carOfferRepository = carOfferRepository;
         this.carOfferImageRepository = carOfferImageRepository;
         this.fileStorageService = fileStorageService;
+        this.carOfferImageService = carOfferImageService;
     }
 
     @Transactional
     public void saveOfferWithImages(CarOffer offerFromForm, MultipartFile[] images) {
         CarOffer offerToSave;
         if (offerFromForm.getId() != null) {
-            offerToSave = carOfferRepository.findById(offerFromForm.getId()).orElseThrow(() -> new EntityNotFoundException("Not found"));
+            offerToSave = carOfferRepository.findById(offerFromForm.getId())
+                    .orElseThrow(() -> new EntityNotFoundException("Not found"));
             updateOfferFields(offerToSave, offerFromForm);
         } else {
             offerToSave = offerFromForm;
+            if (offerToSave.getGwarancjaOpis() == null || offerToSave.getGwarancjaOpis().isEmpty()) {
+                // Tu można by użyć serwisu ustawień, ale zostawiamy to kontrolerowi
+            }
         }
+
+        CarOffer savedOffer = carOfferRepository.save(offerToSave);
+
         if (images != null && images.length > 0) {
-            boolean hasMainImage = offerToSave.getZdjęcia().stream().anyMatch(CarOfferImage::isMain);
+            boolean hasMainImage = savedOffer.getZdjęcia().stream().anyMatch(CarOfferImage::isMain);
             for (int i = 0; i < images.length; i++) {
                 MultipartFile image = images[i];
                 if (image != null && !image.isEmpty()) {
-                    String relativePath = fileStorageService.storeCarPhoto(image, offerToSave.getId());
+                    String relativePath = fileStorageService.storeCarPhoto(image, savedOffer.getId());
                     CarOfferImage offerImage = new CarOfferImage();
                     offerImage.setFileName(relativePath);
-                    offerImage.setCarOffer(offerToSave);
+                    offerImage.setCarOffer(savedOffer);
                     if (i == 0 && !hasMainImage) {
                         offerImage.setMain(true);
                         hasMainImage = true;
                     }
-                    offerToSave.getZdjęcia().add(offerImage);
+                    savedOffer.getZdjęcia().add(offerImage);
                 }
             }
+            carOfferRepository.save(savedOffer);
         }
-        carOfferRepository.save(offerToSave);
     }
 
     private void updateOfferFields(CarOffer existingOffer, CarOffer formOffer) {
         existingOffer.setBrand(formOffer.getBrand());
         existingOffer.setModel(formOffer.getModel());
+        existingOffer.setNaglowek(formOffer.getNaglowek());
         existingOffer.setRok(formOffer.getRok());
         existingOffer.setCena(formOffer.getCena());
         existingOffer.setPrzebieg(formOffer.getPrzebieg());
@@ -82,13 +93,14 @@ public class CarOfferService {
         existingOffer.setMoc(formOffer.getMoc());
         existingOffer.setRodzajPaliwa(formOffer.getRodzajPaliwa());
         existingOffer.setRodzajNadwozia(formOffer.getRodzajNadwozia());
+        existingOffer.setRodzajNadwoziaCiezarowe(formOffer.getRodzajNadwoziaCiezarowe());
         existingOffer.setPojemonscSilnika(formOffer.getPojemonscSilnika());
         existingOffer.setOpis(formOffer.getOpis());
         existingOffer.setFeatured(formOffer.isFeatured());
         existingOffer.setOptions(formOffer.getOptions());
+        // ZMIANA: Aktualizacja kraju pochodzenia (teraz enum)
         existingOffer.setKrajPochodzenia(formOffer.getKrajPochodzenia());
         existingOffer.setKolor(formOffer.getKolor());
-        // ZMIANA: Aktualizacja pola opisu gwarancji
         existingOffer.setGwarancjaOpis(formOffer.getGwarancjaOpis());
         existingOffer.setSkrzyniaBiegow(formOffer.getSkrzyniaBiegow());
         existingOffer.setTypPojazdu(formOffer.getTypPojazdu());
@@ -125,20 +137,41 @@ public class CarOfferService {
     }
     public List<CarOffer> getAllOffers() { return carOfferRepository.findAll(); }
     public Optional<CarOffer> getOfferById(UUID id) { return carOfferRepository.findById(id);}
+    
     @Transactional
     public void changeStatusOfOffer(UUID id, String status) {
         CarOffer offer = carOfferRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found"));
-        offer.setStatus(StatusOfCar.valueOf(status.toUpperCase()));
+        StatusOfCar newStatus = StatusOfCar.valueOf(status.toUpperCase());
+        offer.setStatus(newStatus);
+        
+        if (newStatus == StatusOfCar.SPRZEDANY) {
+            carOfferImageService.deleteNonMainImages(id);
+        }
     }
+
     @Transactional
     public void toggleFeaturedOffer(UUID id) {
         CarOffer offer = carOfferRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Not found"));
         offer.setFeatured(!offer.isFeatured());
     }
     public List<CarOffer> getFeaturedOffers() { return carOfferRepository.findAllByIsFeaturedTrue(); }
-    public long countActiveOffers() { return carOfferRepository.countByStatus(StatusOfCar.DOSTĘPNY); }
+    
+    public long countActiveOffers() {
+        long total = carOfferRepository.count();
+        long sold = carOfferRepository.countByStatus(StatusOfCar.SPRZEDANY);
+        long reserved = carOfferRepository.countByStatus(StatusOfCar.ZAREZERWOWANY);
+        return total - sold - reserved;
+    }
+
     public List<CarOffer> findLast5Offers() {
         Pageable pageable = PageRequest.of(0, 5);
-        return carOfferRepository.findRecentOffers(pageable);
+        List<CarOffer> offers = carOfferRepository.findRecentOffers(pageable);
+        for (CarOffer offer : offers) {
+            if (offer.getCreationDate() == null) {
+                offer.setCreationDate(LocalDateTime.now());
+                carOfferRepository.save(offer);
+            }
+        }
+        return offers;
     }
 }

@@ -9,25 +9,21 @@ import pl.konkretnefury.konkretnefury.service.CarOfferService;
 
 @Controller
 @RequestMapping("/admin")
-public class AdminController {
+public class AdminHomeController {
 
     private final CarOfferService carOfferService;
     private final BlogService blogService;
 
-    // ZMIANA: Konstruktor prosi TYLKO o serwisy, których potrzebujemy.
-    // Usunięto zależność od InMemoryUserDetailsManager.
-    public AdminController(CarOfferService carOfferService, BlogService blogService) {
+    public AdminHomeController(CarOfferService carOfferService, BlogService blogService) {
         this.carOfferService = carOfferService;
         this.blogService = blogService;
     }
 
-    @GetMapping
-    public String adminDashboard(Model model) {
-        // Ta metoda teraz poprawnie doda wszystkie potrzebne dane do modelu.
-        model.addAttribute("activeOfferCount", carOfferService.countActiveOffers());
-        model.addAttribute("recentOffers", carOfferService.findLast5Offers());
-        model.addAttribute("recentBlogPosts", blogService.findLast5Posts());
-
+    @GetMapping("/")
+    public String home(Model model) {
+        // Pobieramy wszystkie promowane oferty, aby wyświetlić je na stronie głównej
+        model.addAttribute("featuredOffers", carOfferService.getFeaturedOffers());
+        model.addAttribute("blogPosts", blogService.findLast5Posts());
         return "admin/home";
     }
 }

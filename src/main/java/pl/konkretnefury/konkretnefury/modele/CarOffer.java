@@ -20,25 +20,32 @@ public class CarOffer {
 
     @ManyToOne @JoinColumn(name = "brand_id") private Brand brand;
     @ManyToOne @JoinColumn(name = "model_id") private BrandsModel model;
+    
+    private String naglowek;
     private int rok;
     @PriceFormat private BigDecimal cena;
     @MileageFormat private Integer przebieg;
     @PowerFormat private Integer moc;
     @VolumeFormat private Integer pojemonscSilnika;
-    private String KrajPochodzenia;
+    
+    // ZMIANA: Zmiana typu na enum
+    @Enumerated(EnumType.STRING)
+    @Column(length = 50)
+    private KrajPochodzenia krajPochodzenia;
+    
     private String kolor;
     private String gwarancjaOpis;
 
-    // ZMIANA: Dodano @Column(length=50) do wszystkich pól enum
     @Enumerated(EnumType.STRING) @Column(length = 50) private SkrzyniaBiegow skrzyniaBiegow;
     @Enumerated(EnumType.STRING) @Column(length = 50) private TypPojazdu typPojazdu;
     @Enumerated(EnumType.STRING) @Column(length = 50) private Naped naped;
     @Enumerated(EnumType.STRING) @Column(length = 50) private RodzajPaliwa rodzajPaliwa;
     @Enumerated(EnumType.STRING) @Column(length = 50) private RodzajNadwozia rodzajNadwozia;
-    @Enumerated(EnumType.STRING) @Column(length = 50) private StatusOfCar status;
+    @Enumerated(EnumType.STRING) @Column(length = 50) private RodzajNadwoziaCiezarowe rodzajNadwoziaCiezarowe;
 
     private String liczba_drzwi;
     @Lob private String opis;
+    @Enumerated(EnumType.STRING) @Column(length = 50) private StatusOfCar status;
     private boolean isFeatured = false;
     @CreationTimestamp private LocalDateTime creationDate;
 
@@ -60,6 +67,8 @@ public class CarOffer {
     public void setBrand(Brand brand) { this.brand = brand; }
     public BrandsModel getModel() { return model; }
     public void setModel(BrandsModel model) { this.model = model; }
+    public String getNaglowek() { return naglowek; }
+    public void setNaglowek(String naglowek) { this.naglowek = naglowek; }
     public int getRok() { return rok; }
     public void setRok(int rok) { this.rok = rok; }
     public BigDecimal getCena() { return cena; }
@@ -70,12 +79,14 @@ public class CarOffer {
     public void setRodzajPaliwa(RodzajPaliwa rodzajPaliwa) { this.rodzajPaliwa = rodzajPaliwa; }
     public RodzajNadwozia getRodzajNadwozia() { return rodzajNadwozia; }
     public void setRodzajNadwozia(RodzajNadwozia rodzajNadwozia) { this.rodzajNadwozia = rodzajNadwozia; }
+    public RodzajNadwoziaCiezarowe getRodzajNadwoziaCiezarowe() { return rodzajNadwoziaCiezarowe; }
+    public void setRodzajNadwoziaCiezarowe(RodzajNadwoziaCiezarowe rodzajNadwoziaCiezarowe) { this.rodzajNadwoziaCiezarowe = rodzajNadwoziaCiezarowe; }
     public String getOpis() { return opis; }
     public void setOpis(String opis) { this.opis = opis; }
     public StatusOfCar getStatus() { return status; }
     public void setStatus(StatusOfCar status) { this.status = status; }
     public boolean isFeatured() { return isFeatured; }
-    public void setFeatured(boolean featured) { isFeatured = featured; }
+    public void setFeatured(boolean featured) { this.isFeatured = featured; }
     public LocalDateTime getCreationDate() { return creationDate; }
     public void setCreationDate(LocalDateTime creationDate) { this.creationDate = creationDate; }
     public List<CarOfferImage> getZdjęcia() { return zdjęcia; }
@@ -88,8 +99,11 @@ public class CarOffer {
     public void setMoc(Integer moc) { this.moc = moc; }
     public Integer getPojemonscSilnika() { return pojemonscSilnika; }
     public void setPojemonscSilnika(Integer pojemonscSilnika) { this.pojemonscSilnika = pojemonscSilnika; }
-    public String getKrajPochodzenia() { return KrajPochodzenia; }
-    public void setKrajPochodzenia(String krajPochodzenia) { KrajPochodzenia = krajPochodzenia; }
+    
+    // ZMIANA: Getter i Setter dla nowego typu
+    public KrajPochodzenia getKrajPochodzenia() { return krajPochodzenia; }
+    public void setKrajPochodzenia(KrajPochodzenia krajPochodzenia) { this.krajPochodzenia = krajPochodzenia; }
+
     public String getKolor() { return kolor; }
     public void setKolor(String kolor) { this.kolor = kolor; }
     public String getGwarancjaOpis() { return gwarancjaOpis; }

@@ -3,25 +3,35 @@
 <body>
 
 <!-- Fragment publicznej nawigacji -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top" th:fragment="navbar">
-    <div class="container">
-        <a class="navbar-brand" th:href="@{/}">
-            <i class="fas fa-car-side"></i> Konkretne Fury
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#publicNavbar">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="publicNavbar">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link" th:href="@{/offers}">Wszystkie Oferty</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/blog}">Blog</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/gallery}">Galeria</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/brands}">Marki</a></li>
-                <li class="nav-item"><a class="nav-link" th:href="@{/contact}">Kontakt</a></li>
+<div id="menu" th:fragment="navbar">
+    <header>
+        <a th:href="@{/}"><img th:src="@{/photo/autokonkret_whjite_alpha_mini.png}" alt="logo" ></a>
+    </header>
+
+    <nav class="content-menu hidden-dropdown">
+        <div class="icnmenu">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <ul class="hidden-dropdown-content list-unstyled">
+                <!-- ZMIANA: Użycie zmiennej activePage -->
+                <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">HOME</a></li>
+                <li><a th:href="@{/onas}" th:classappend="${activePage == 'onas' ? 'active' : ''}">O NAS</a></li>
+                <li><a th:href="@{/offers}" th:classappend="${activePage == 'offers' ? 'active' : ''}">OFERTA</a></li>
+                <li><a th:href="@{/kontakt}" th:classappend="${activePage == 'kontakt' ? 'active' : ''}">KONTAKT</a></li>
+                <li><a th:href="@{/blog}" th:classappend="${activePage == 'blog' ? 'active' : ''}">AKTUALNOŚCI</a></li>
+                <li><a th:href="@{/galeria}" th:classappend="${activePage == 'galeria' ? 'active' : ''}">GALERIA</a></li>
             </ul>
         </div>
-    </div>
-</nav>
-
+        <ul class="content-menu centered-menu list-unstyled">
+            <li><a th:href="@{/}" th:classappend="${activePage == 'home' ? 'active' : ''}">HOME</a></li>
+            <li><a th:href="@{/onas}" th:classappend="${activePage == 'onas' ? 'active' : ''}">O NAS</a></li>
+            <li><a th:href="@{/offers}" th:classappend="${activePage == 'offers' ? 'active' : ''}">OFERTA</a></li>
+            <li><a th:href="@{/kontakt}" th:classappend="${activePage == 'kontakt' ? 'active' : ''}">KONTAKT</a></li>
+            <li><a th:href="@{/blog}" th:classappend="${activePage == 'blog' ? 'active' : ''}">AKTUALNOŚCI</a></li>
+            <li><a th:href="@{/galeria}" th:classappend="${activePage == 'galeria' ? 'active' : ''}">GALERIA</a></li>
+        </ul>
+    </nav>
+</div>
 </body>
 </html>

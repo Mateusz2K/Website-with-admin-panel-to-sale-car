@@ -6,6 +6,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
 </head>
 <body>
 <div th:replace="~{admin/fragments/navigation :: navbar}"></div>
@@ -15,7 +17,6 @@
         <form th:action="@{/admin/offers}" th:object="${offer}" method="post" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}"/>
 
-            <!-- SEKCJA ZARZĄDZANIA ZDJĘCIAMI -->
             <div th:if="${offer.id != null}" class="mb-5">
                 <h3 class="h4">Zarządzaj Zdjęciami</h3>
                 <div id="imageCarousel" class="carousel slide" data-bs-interval="false">
@@ -41,10 +42,13 @@
             </div>
             <hr>
 
-            <!-- SEKCJA DANYCH PODSTAWOWYCH -->
             <div class="row">
                 <div class="col-md-6 mb-3"><label for="brand" class="form-label">Marka</label><select id="brand" class="form-select" th:field="*{brand}" required><option value="">-- Wybierz --</option><option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.nazwaMarki}"></option></select></div>
                 <div class="col-md-6 mb-3"><label for="model" class="form-label">Model</label><select id="model" class="form-select" th:field="*{model}" required disabled><option th:if="${offer.model != null}" th:value="${offer.model.id}" th:text="${offer.model.model}" selected></option></select></div>
+            </div>
+            <div class="mb-3">
+                <label for="naglowek" class="form-label">Nagłówek oferty (opcjonalny)</label>
+                <input type="text" id="naglowek" class="form-control" th:field="*{naglowek}" placeholder="np. Idealny stan, pierwszy właściciel!">
             </div>
             <div class="row">
                 <div class="col-md-4 mb-3"><label for="rok" class="form-label">Rok</label><input type="number" id="rok" class="form-control" th:field="*{rok}" required></div>
@@ -57,16 +61,17 @@
                 <div class="col-md-4 mb-3"><label for="rodzajPaliwa" class="form-label">Paliwo</label><select id="rodzajPaliwa" class="form-select" th:field="*{rodzajPaliwa}" required><option value="">-- Wybierz --</option><option th:each="paliwo : ${T(pl.konkretnefury.konkretnefury.modele.RodzajPaliwa).values()}" th:value="${paliwo}" th:text="${paliwo.displayName}"></option></select></div>
             </div>
             <div class="row">
-                <div class="col-md-4 mb-3"><label for="rodzajNadwozia" class="form-label">Nadwozie</label><select id="rodzajNadwozia" class="form-select" th:field="*{rodzajNadwozia}" required><option value="">-- Wybierz --</option><option th:each="nadwozie : ${T(pl.konkretnefury.konkretnefury.modele.RodzajNadwozia).values()}" th:value="${nadwozie}" th:text="${nadwozie.displayName}"></option></select></div>
+                <div class="col-md-4 mb-3"><label for="typPojazdu" class="form-label">Typ pojazdu</label><select id="typPojazdu" class="form-select" th:field="*{typPojazdu}" onchange="toggleNadwozie()"><option value="">-- Wybierz --</option><option th:each="t : ${T(pl.konkretnefury.konkretnefury.modele.TypPojazdu).values()}" th:value="${t}" th:text="${t.displayName}"></option></select></div>
+                <div class="col-md-4 mb-3" id="nadwozieOsoboweContainer"><label for="rodzajNadwozia" class="form-label">Nadwozie (Osobowe)</label><select id="rodzajNadwozia" class="form-select" th:field="*{rodzajNadwozia}"><option value="">-- Wybierz --</option><option th:each="nadwozie : ${T(pl.konkretnefury.konkretnefury.modele.RodzajNadwozia).values()}" th:value="${nadwozie}" th:text="${nadwozie.displayName}"></option></select></div>
+                <div class="col-md-4 mb-3" id="nadwozieCiezaroweContainer" style="display: none;"><label for="rodzajNadwoziaCiezarowe" class="form-label">Nadwozie (Ciężarowe)</label><select id="rodzajNadwoziaCiezarowe" class="form-select" th:field="*{rodzajNadwoziaCiezarowe}"><option value="">-- Wybierz --</option><option th:each="nadwozie : ${T(pl.konkretnefury.konkretnefury.modele.RodzajNadwoziaCiezarowe).values()}" th:value="${nadwozie}" th:text="${nadwozie.displayName}"></option></select></div>
                 <div class="col-md-4 mb-3"><label for="kolor" class="form-label">Kolor</label><input type="text" id="kolor" class="form-control" th:field="*{kolor}"></div>
-                <div class="col-md-4 mb-3"><label for="krajPochodzenia" class="form-label">Kraj pochodzenia</label><input type="text" id="krajPochodzenia" class="form-control" th:field="*{KrajPochodzenia}"></div>
             </div>
             <div class="row">
                 <div class="col-md-4 mb-3"><label for="naped" class="form-label">Napęd</label><select id="naped" class="form-select" th:field="*{naped}"><option value="">-- Wybierz --</option><option th:each="n : ${T(pl.konkretnefury.konkretnefury.modele.Naped).values()}" th:value="${n}" th:text="${n.displayName}"></option></select></div>
                 <div class="col-md-4 mb-3"><label for="skrzyniaBiegow" class="form-label">Skrzynia biegów</label><select id="skrzyniaBiegow" class="form-select" th:field="*{skrzyniaBiegow}"><option value="">-- Wybierz --</option><option th:each="s : ${T(pl.konkretnefury.konkretnefury.modele.SkrzyniaBiegow).values()}" th:value="${s}" th:text="${s.displayName}"></option></select></div>
-                <div class="col-md-4 mb-3"><label for="typPojazdu" class="form-label">Typ pojazdu</label><select id="typPojazdu" class="form-select" th:field="*{typPojazdu}"><option value="">-- Wybierz --</option><option th:each="t : ${T(pl.konkretnefury.konkretnefury.modele.TypPojazdu).values()}" th:value="${t}" th:text="${t.displayName}"></option></select></div>
+                <!-- ZMIANA: Pole tekstowe zastąpione listą rozwijaną -->
+                <div class="col-md-4 mb-3"><label for="krajPochodzenia" class="form-label">Kraj pochodzenia</label><select id="krajPochodzenia" class="form-select" th:field="*{krajPochodzenia}"><option value="">-- Wybierz --</option><option th:each="kraj : ${T(pl.konkretnefury.konkretnefury.modele.KrajPochodzenia).values()}" th:value="${kraj}" th:text="${kraj.displayName}"></option></select></div>
             </div>
-
             <div class="mb-3">
                 <div class="form-check">
                     <input class="form-check-input" type="checkbox" id="gwarancjaCheck" onchange="toggleGwarancjaOpis()">
@@ -77,7 +82,6 @@
                     <textarea id="gwarancjaOpis" class="form-control" th:field="*{gwarancjaOpis}" rows="2"></textarea>
                 </div>
             </div>
-
             <div class="mb-3"><label for="opis" class="form-label">Opis</label><textarea id="opis" class="form-control" rows="5" th:field="*{opis}"></textarea></div>
             <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="isFeatured" th:field="*{featured}"><label class="form-check-label" for="isFeatured"><strong>Oznacz jako promowana</strong></label></div>
 
@@ -143,27 +147,45 @@
             fetchModels(brandSelect.value);
         }
 
-        // Ustaw stan początkowy gwarancji przy ładowaniu strony (dla edycji)
         const textarea = document.getElementById('gwarancjaOpis');
         if (textarea.value) {
             document.getElementById('gwarancjaCheck').checked = true;
             toggleGwarancjaOpis();
         }
+
+        // ZMIANA: Inicjalizacja stanu nadwozia
+        toggleNadwozie();
     });
 
-    // Skrypty do zarządzania istniejącymi zdjęciami
     function setMainImage(button) {
         const imageId = button.closest('.carousel-item').dataset.imageId;
-        fetch(`/api/images/set-main/${imageId}`, { method: 'POST' }).then(() => window.location.reload());
+        // ZMIANA: Pobranie tokenu CSRF
+        const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+        const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+        fetch(`/api/images/set-main/${imageId}`, {
+            method: 'POST',
+            headers: {
+                [header]: token
+            }
+        }).then(() => window.location.reload());
     }
+
     function deleteImage(button) {
         if (confirm('Czy na pewno chcesz usunąć to zdjęcie?')) {
             const imageId = button.closest('.carousel-item').dataset.imageId;
-            fetch(`/api/images/delete/${imageId}`, { method: 'DELETE' }).then(() => window.location.reload());
+            // ZMIANA: Pobranie tokenu CSRF
+            const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+            const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+            fetch(`/api/images/delete/${imageId}`, {
+                method: 'DELETE',
+                headers: {
+                    [header]: token
+                }
+            }).then(() => window.location.reload());
         }
     }
-
-    // Skrypt do pokazywania/ukrywania opisu gwarancji
     function toggleGwarancjaOpis() {
         const container = document.getElementById('gwarancjaOpisContainer');
         const checkbox = document.getElementById('gwarancjaCheck');
@@ -176,7 +198,34 @@
         }
     }
 
-    // Skrypt do natychmiastowego podglądu nowo dodanych zdjęć
+    // ZMIANA: Przywrócono funkcję do przełączania nadwozia
+    function toggleNadwozie() {
+        const typPojazdu = document.getElementById('typPojazdu').value;
+        const osoboweContainer = document.getElementById('nadwozieOsoboweContainer');
+        const ciezaroweContainer = document.getElementById('nadwozieCiezaroweContainer');
+        const osoboweSelect = document.getElementById('rodzajNadwozia');
+        const ciezaroweSelect = document.getElementById('rodzajNadwoziaCiezarowe');
+
+        if (typPojazdu === 'OSOBOWY') {
+            osoboweContainer.style.display = 'block';
+            ciezaroweContainer.style.display = 'none';
+            ciezaroweSelect.value = '';
+            osoboweSelect.required = true;
+            ciezaroweSelect.required = false;
+        } else if (typPojazdu === 'DOSTAWCZY' || typPojazdu === 'CIEZAROWY') {
+            osoboweContainer.style.display = 'none';
+            ciezaroweContainer.style.display = 'block';
+            osoboweSelect.value = '';
+            osoboweSelect.required = false;
+            ciezaroweSelect.required = true;
+        } else {
+            osoboweContainer.style.display = 'block';
+            ciezaroweContainer.style.display = 'none';
+            osoboweSelect.required = true;
+            ciezaroweSelect.required = false;
+        }
+    }
+
     document.getElementById('images').addEventListener('change', function(event) {
         const carouselInner = document.querySelector('#imageCarousel .carousel-inner');
         const files = event.target.files;

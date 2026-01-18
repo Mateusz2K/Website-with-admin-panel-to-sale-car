@@ -38,4 +38,7 @@ public class BlogService {
         Pageable pageable = PageRequest.of(0, 5);
         return blogPostRepository.findRecentPosts(pageable);
     }
+    public List<BlogPost> findTop5Posts(){
+        return blogPostRepository.findTop5ByOrderByDataPublikacjiDesc();
+    }
 }
