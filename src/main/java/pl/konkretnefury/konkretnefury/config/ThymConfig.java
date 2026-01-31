@@ -23,7 +23,6 @@ public class ThymConfig implements WebMvcConfigurer {
     @Value("${file.upload-dir.icons}")
     private String iconUploadDir;
     
-    // ZMIANA: Wstrzyknięcie ścieżki do galerii
     @Value("${file.upload-dir.gallery}")
     private String galleryUploadDir;
 
@@ -40,9 +39,14 @@ public class ThymConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // 1. Obsługa zdjęć ofert (ścieżki względne: UUID/plik.jpg)
         registry.addResourceHandler("/car_photo/**").addResourceLocations("file:" + carPhotoUploadDir + "/");
+        
+        // 2. Obsługa domyślnego zdjęcia (ścieżki z prefiksem: /uploads/car_photos/plik.jpg)
+        // Uwaga: mapujemy URL /uploads/car_photos/** na fizyczny folder uploads/car_photos/
+        registry.addResourceHandler("/uploads/car_photos/**").addResourceLocations("file:" + carPhotoUploadDir + "/");
+        
         registry.addResourceHandler("/uploads/icons/**").addResourceLocations("file:" + iconUploadDir + "/");
-        // ZMIANA: Dodanie mapowania dla galerii
         registry.addResourceHandler("/uploads/gallery/**").addResourceLocations("file:" + galleryUploadDir + "/");
     }
 

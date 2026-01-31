@@ -31,7 +31,8 @@ public class FileStorageService {
     
     public String storeDefaultImageOffer(MultipartFile file){
         String fileName = storeAndOptimize(file, carPhotoUploadDir, null, 1200, "jpg");
-        return "/uploads/cars/" + fileName;
+        // ZMIANA: Poprawiono ścieżkę URL z /uploads/cars/ na /car_photo/
+        return "uploads/car_photos/" + fileName;
     }
 
     public String storeCarPhoto(MultipartFile file, UUID offerId) {

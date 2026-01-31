@@ -117,7 +117,7 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card sticky-top shadow-sm" style="top: 100px; z-index: -1">
+            <div class="card sticky-top shadow-sm" style="top: 100px;">
                 <div class="card-body">
                     <th:block th:if="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title text-danger text-center mb-4">Oferta nieaktualna</h3></th:block>
                     <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title price text-center mb-4" th:text="${@priceFormatter.print(offer.cena, #locale)}"></h3></th:block>
@@ -125,20 +125,14 @@
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between"><strong>Marka:</strong> <span th:text="${offer.brand?.nazwaMarki}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Model:</strong> <span th:text="${offer.model?.model}"></span></li>
-
-                        <!-- ZMIANA: Użycie beana yearFormatter -->
-                        <li class="list-group-item d-flex justify-content-between"><strong>Rok produkcji:</strong> <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span></li>
-
-                        <!-- ZMIANA: Użycie beana mileageFormatter -->
+                        <li class="list-group-item d-flex justify-content-between"><strong>Rok Produkcji:</strong> <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Przebieg:</strong> <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Pojemność:</strong> <span th:text="${@volumeFormatter.print(offer.pojemonscSilnika, #locale)}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Moc:</strong> <span th:text="${@powerFormatter.print(offer.moc, #locale)}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajPaliwa != null}"><strong>Paliwo:</strong> <span th:text="${offer.rodzajPaliwa.displayName}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.skrzyniaBiegow != null}"><strong>Skrzynia biegów:</strong> <span th:text="${offer.skrzyniaBiegow.displayName}"></span></li>
-
+                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.skrzyniaBiegow != null}"><strong>Skrzyni biegówa:</strong> <span th:text="${offer.skrzyniaBiegow.displayName}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajNadwozia != null}"><strong>Nadwozie:</strong> <span th:text="${offer.rodzajNadwozia.displayName}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajNadwoziaCiezarowe != null}"><strong>Nadwozie:</strong> <span th:text="${offer.rodzajNadwoziaCiezarowe.displayName}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.liczba_drzwi != null}"><strong>Liczba Drzwi:</strong> <span th:text="${offer.liczba_drzwi}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.kolor != null}"><strong>Kolor:</strong> <span th:text="${offer.kolor}"></span></li>
 
                         <!-- ZMIANA: Dodanie flagi obok kraju -->
@@ -184,28 +178,20 @@
         const carousel = document.getElementById('photoCarousel');
         const thumbnails = document.querySelectorAll('.thumbnail-btn');
 
-        // Nasłuchuj zmiany slajdu w głównej karuzeli
         carousel.addEventListener('slide.bs.carousel', function (event) {
-            const index = event.to; // Indeks nowego slajdu
-
-            // Usuń klasę active ze wszystkich miniaturek
+            const index = event.to;
             thumbnails.forEach(thumb => thumb.classList.remove('active'));
-
-            // Dodaj klasę active do odpowiedniej miniaturki
             if (thumbnails[index]) {
                 thumbnails[index].classList.add('active');
-                // Opcjonalnie: przewiń pasek miniaturek, jeśli jest długi
                 thumbnails[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
             }
         });
     });
 
-    // Funkcja otwierająca Lightbox
     function openLightbox(src) {
         const modalElement = document.getElementById('lightboxModal');
         const modalImg = document.getElementById('lightboxImage');
         const modal = new bootstrap.Modal(modalElement);
-
         modalImg.src = src;
         modal.show();
     }

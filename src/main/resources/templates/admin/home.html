@@ -16,12 +16,59 @@
     <h1 class="h2 mb-4">Pulpit</h1>
 
     <div class="row g-4 mb-4">
-        <div class="col-md-6 offset-md-3">
-            <div class="card text-center h-100 shadow-sm">
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm border-primary">
                 <div class="card-body">
-                    <h5 class="card-title">Aktywne Oferty</h5>
+                    <h5 class="card-title text-primary"><i class="fas fa-eye"></i> Całkowite Odwiedziny</h5>
+                    <p class="display-4 fw-bold" th:text="${totalVisits}">0</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-center h-100 shadow-sm border-success">
+                <div class="card-body">
+                    <h5 class="card-title text-success"><i class="fas fa-car"></i> Aktywne Oferty</h5>
                     <p class="display-4 fw-bold" th:text="${activeOfferCount}">0</p>
-                    <a th:href="@{/admin/offers}" class="btn btn-outline-primary">Zarządzaj Ofertami</a>
+                    <a th:href="@{/admin/offers}" class="btn btn-sm btn-outline-success mt-2">Zarządzaj</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header bg-light fw-bold">Popularne Oferty (Top 5)</div>
+                <ul class="list-group list-group-flush list-group-numbered">
+                    <li class="list-group-item d-flex justify-content-between align-items-start" th:each="item : ${popularOffers}">
+                        <div class="ms-2 me-auto">
+                            <div class="fw-bold" th:text="${item.offer.brand?.nazwaMarki + ' ' + item.offer.model?.model}">Marka Model</div>
+                            <small class="text-muted" th:text="${item.offer.rok}">2020</small>
+                        </div>
+                        <span class="badge bg-primary rounded-pill" th:text="${item.visitCount}">14</span>
+                    </li>
+                    <li class="list-group-item text-center text-muted" th:if="${popularOffers == null or popularOffers.isEmpty()}">Brak danych</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- ZMIANA: Sekcja Wykresów -->
+    <div class="row mb-5">
+        <div class="col-lg-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-bold">
+                    <i class="fas fa-chart-line me-2"></i> Aktywność w ostatnich 7 dniach
+                </div>
+                <div class="card-body">
+                    <canvas id="visitsChart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white fw-bold">
+                    <i class="fas fa-chart-pie me-2"></i> Ruch wg typu strony
+                </div>
+                <div class="card-body d-flex justify-content-center align-items-center">
+                    <canvas id="pieChart" style="max-height: 250px;"></canvas>
                 </div>
             </div>
         </div>
@@ -39,11 +86,11 @@
                 <a th:each="offer : ${recentOffers}" th:href="@{/admin/offers/edit/{id}(id=${offer.id})}" class="list-group-item list-group-item-action">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1" th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></h5>
-                        <small th:if="${offer.creationDate}" th:text="${#temporals.format(offer.creationDate, 'dd.MM.yyyy')}"></small>
+                        <small th:if="${offer.creationDate != null}" th:text="${#temporals.format(offer.creationDate, 'dd-MM-yyyy')}"></small>
+                        <small th:if="${offer.creationDate == null}" class="text-muted">Brak daty</small>
                     </div>
                     <p class="mb-1" th:text="${{offer.cena}}"></p>
                 </a>
-                <!-- ZMIANA: Bezpieczny warunek sprawdzający, czy lista jest null lub pusta -->
                 <div th:if="${recentOffers == null or recentOffers.isEmpty()}" class="list-group-item">Brak ofert.</div>
             </div>
         </div>
@@ -53,11 +100,11 @@
                 <a th:each="post : ${recentBlogPosts}" th:href="@{/admin/blog/edit/{id}(id=${post.id})}" class="list-group-item list-group-item-action">
                     <div class="d-flex w-100 justify-content-between">
                         <h5 class="mb-1" th:text="${post.tytul}"></h5>
-                        <small th:if="${post.dataPublikacji}" th:text="${#temporals.format(post.dataPublikacji, 'dd.MM.yyyy')}"></small>
+                        <small th:if="${post.dataPublikacji != null}" th:text="${#temporals.format(post.dataPublikacji, 'dd-MM-yyyy')}"></small>
+                        <small th:if="${post.dataPublikacji == null}" class="text-muted">Brak daty</small>
                     </div>
                     <p class="mb-1" th:text="${post.autor}"></p>
                 </a>
-                <!-- ZMIANA: Bezpieczny warunek sprawdzający, czy lista jest null lub pusta -->
                 <div th:if="${recentBlogPosts == null or recentBlogPosts.isEmpty()}" class="list-group-item">Brak wpisów.</div>
             </div>
         </div>
@@ -65,5 +112,63 @@
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wykres Liniowy
+        const ctx = document.getElementById('visitsChart').getContext('2d');
+        const labels = /*[[${chartData.labels}]]*/ ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'];
+        const data = /*[[${chartData.data}]]*/ [0, 0, 0, 0, 0, 0, 0];
+
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Liczba odwiedzin',
+                    data: data,
+                    borderColor: '#0d6efd',
+                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // ZMIANA: Wykres Kołowy
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const pieLabels = /*[[${pieChartData.labels}]]*/ ['Home', 'Offers', 'Blog'];
+        const pieData = /*[[${pieChartData.data}]]*/ [10, 5, 2];
+
+        new Chart(pieCtx, {
+            type: 'doughnut',
+            data: {
+                labels: pieLabels,
+                datasets: [{
+                    data: pieData,
+                    backgroundColor: ['#0d6efd', '#198754', '#ffc107'],
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    });
+    /*]]>*/
+</script>
 </body>
 </html>

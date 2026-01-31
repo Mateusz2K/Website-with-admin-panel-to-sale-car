@@ -23,6 +23,13 @@ public class ImageUploadController {
     @Value("${upload.dir}")
     private String uploadUrl;
 
+    /**
+     * Metoda do przesyłania zdjęć do fizycznego zapisu na serwerze.
+     * wykorzystuje MultipartFile do pobierania z menedzera zdjęcia.
+     * Wyszukuje rozszerzenie pliku, wprowadza unikalną nazwę, podpina do ścieżki, sprawdza czy nie ma duplikatów i zapisuje
+     * @param file
+     * @return kod opdopwiedzi wraz z JSON z ścieżką
+     */
     @PostMapping("/image")
     public ResponseEntity<?> uploadImage(@RequestParam("file") MultipartFile file){
         if (file.isEmpty() || !file.getContentType().startsWith("image/")) {

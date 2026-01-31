@@ -9,6 +9,9 @@ import pl.konkretnefury.konkretnefury.service.GalleryService;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Klasa Controller do pobierania strony statycznej "O nas", "Kontakt" oraz "Galeria"
+ */
 @Controller
 public class PageController {
 

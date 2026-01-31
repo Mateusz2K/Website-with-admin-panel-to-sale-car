@@ -17,7 +17,6 @@ public class SystemSettingService {
 
     public static final String DEFAULT_OFFER_IMAGE_KEY = "default_offer_image";
     public static final String DEFAULT_WARRANTY_DESCRIPTION_KEY = "default_warranty_description";
-    // ZMIANA: Nowy klucz dla domyślnego opisu
     public static final String DEFAULT_OFFER_DESCRIPTION_KEY = "default_offer_description";
     
     private final SystemSettingRepository settingRepository;
@@ -25,6 +24,10 @@ public class SystemSettingService {
 
     @Value("${file.upload-dir.icons}")
     private String iconUploadDir;
+
+    // ZMIANA: Wstrzyknięcie katalogu zdjęć samochodów (potrzebne do usuwania)
+    @Value("${file.upload-dir.cars}")
+    private String carPhotoUploadDir;
 
     public SystemSettingService(SystemSettingRepository settingRepository, FileStorageService fileStorageService) {
         this.settingRepository = settingRepository;
@@ -44,11 +47,18 @@ public class SystemSettingService {
                 String oldPathUrl = oldSetting.get().getSettingValue();
                 if (oldPathUrl != null && !oldPathUrl.equals("/img/placeholder.png")) {
                     try {
-                        String fileName = oldPathUrl.substring(oldPathUrl.lastIndexOf("/") + 1);
-                        Path oldFilePath = Paths.get(iconUploadDir, fileName);
-                        Files.deleteIfExists(oldFilePath);
+                        String fileName = oldPathUrl.substring(oldPathUrl.lastIndexOf("/") + 1).trim();
+                        // Używamy normalize() i toAbsolutePath(), żeby mieć pewność
+                        Path oldFilePath = Paths.get(carPhotoUploadDir, fileName).toAbsolutePath().normalize();
+
+                        System.out.println("Debug: Próbuję usunąć: " + oldFilePath);
+
+                        boolean deleted = Files.deleteIfExists(oldFilePath);
+                        if (!deleted) {
+                            System.err.println("Plik nie istnieje pod ścieżką: " + oldFilePath);
+                        }
                     } catch (IOException e) {
-                        System.err.println("Nie udało się usunąć starej domyślnej grafiki: " + e.getMessage());
+                        System.err.println("Błąd uprawnień lub błąd WE/WY: " + e.getMessage());
                     }
                 }
             }
@@ -69,7 +79,6 @@ public class SystemSettingService {
         settingRepository.save(setting);
     }
 
-    // ZMIANA: Metody dla domyślnego opisu oferty
     public String getDefaultOfferDescription() {
         return settingRepository.findById(DEFAULT_OFFER_DESCRIPTION_KEY)
                 .map(SystemSetting::getSettingValue)

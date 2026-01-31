@@ -24,6 +24,11 @@ public class ModelApiController {
         this.brandService = brandService;
     }
 
+    /**
+     * metoda do pobierania modeli z marki
+     * @param brandId
+     * @return Lista modeli z marki
+     */
     @GetMapping("/by-brand/{brandId}")
     public List<ModelDTO> getModelsByBrand(@PathVariable UUID brandId) {
         Optional<Brand> brandOptional = brandService.getBrandById(brandId);
