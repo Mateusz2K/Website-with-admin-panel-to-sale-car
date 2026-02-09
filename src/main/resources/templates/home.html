@@ -207,7 +207,7 @@
             <div class="row g-4">
                 <div th:each="offer : ${featuredOffers}" class="col-md-6 col-lg-4">
                     <div class="card offer-card h-100 border shadow-sm"
-                         th:classappend="${offer.status?.name() == 'DOSTĘPNY'} ? 'border-primary' : (${offer.status?.name() == 'ZAREZERWOWANY'} ? 'border-warning' : 'border-secondary')">
+                         th:classappend="${offer.status?.name() == 'DOSTĘPNY'} ? 'border-primary' : (${offer.status?.name() == 'ZAREZERWOWANY'} ? 'border-primary' : 'border-secondary')">
                         <div class="card-img-container position-relative overflow-hidden" style="height: 250px;">
                             <th:block th:with="mainImage=${offer.getMainImage().orElse(null)}">
                                 <img th:if="${mainImage != null}" th:src="@{/car_photo/{fileName}(fileName=${mainImage.fileName})}" class="card-img-top w-100 h-100 object-fit-cover" alt="Zdjęcie samochodu" loading="lazy">
@@ -221,6 +221,7 @@
                             <p class="card-text text-muted small mb-3">
                                 <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span> &bull;
                                 <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span> &bull;
+                                <span th:if="${offer.skrzyniaBiegow != null}" th:text="${offer.skrzyniaBiegow.displayName}"></span> &bull;
                                 <span th:if="${offer.rodzajPaliwa != null}" th:text="${offer.rodzajPaliwa.displayName}"></span>
                             </p>
                             <div class="mt-auto">

@@ -39,11 +39,10 @@ public class ThymConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 1. Obsługa zdjęć ofert (ścieżki względne: UUID/plik.jpg)
+        // Mapowanie dla zdjęć ofert (ścieżki typu /car_photo/...)
         registry.addResourceHandler("/car_photo/**").addResourceLocations("file:" + carPhotoUploadDir + "/");
         
-        // 2. Obsługa domyślnego zdjęcia (ścieżki z prefiksem: /uploads/car_photos/plik.jpg)
-        // Uwaga: mapujemy URL /uploads/car_photos/** na fizyczny folder uploads/car_photos/
+        // Mapowanie dla domyślnego zdjęcia (ścieżki typu /uploads/car_photos/...)
         registry.addResourceHandler("/uploads/car_photos/**").addResourceLocations("file:" + carPhotoUploadDir + "/");
         
         registry.addResourceHandler("/uploads/icons/**").addResourceLocations("file:" + iconUploadDir + "/");

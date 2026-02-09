@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Zablokowane Adresy IP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin-style.css}">
+</head>
+<body>
+<div th:replace="~{admin/fragments/navigation :: navbar}"></div>
+<main class="container mt-4">
+    <h1 class="h2 mb-4">Bezpieczeństwo - Zablokowane IP</h1>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Adres IP</th>
+                            <th>Liczba nieudanych prób</th>
+                            <th>Akcja</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="blocked : ${blockedIPs}">
+                            <td th:text="${blocked.ip}">192.168.1.1</td>
+                            <td><span class="badge bg-danger" th:text="${blocked.attempts}">5</span></td>
+                            <td>
+                                <form th:action="@{/admin/security/unblock}" method="post" class="d-inline">
+                                    <input type="hidden" name="ip" th:value="${blocked.ip}"/>
+                                    <button type="submit" class="btn btn-sm btn-success" onclick="return confirm('Czy na pewno chcesz odblokować ten adres IP?')">
+                                        <i class="fas fa-unlock"></i> Odblokuj
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <tr th:if="${blockedIPs.empty}">
+                            <td colspan="3" class="text-center text-muted py-4">Brak zablokowanych adresów IP.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

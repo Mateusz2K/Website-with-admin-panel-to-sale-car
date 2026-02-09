@@ -1,5 +1,7 @@
 package pl.konkretnefury.konkretnefury.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,6 +22,8 @@ public class CarOfferImageService {
 
     private final CarOfferImageRepo imageRepository;
     private final CarOfferRepo carOfferRepo;
+
+    Logger logger = LoggerFactory.getLogger(CarOfferImageService.class);
 
     @Value("${file.upload-dir.cars}")
     private String carPhotoUploadDir;
@@ -43,6 +47,7 @@ public class CarOfferImageService {
     @Transactional
     public void deleteImage(UUID imageId) {
         imageRepository.findById(imageId).ifPresent(this::deleteImageFileAndRecord);
+        logger.info("Usunięto zdjęcie o ID: {}", imageId);
     }
 
     @Transactional
@@ -62,6 +67,7 @@ public class CarOfferImageService {
         
         offer.getZdjęcia().removeAll(imagesToDelete);
         carOfferRepo.save(offer);
+        logger.info("Usunięto zdjęcia nie główne dla oferty o ID: {}", offerId);
     }
 
     private void deleteImageFileAndRecord(CarOfferImage image) {
@@ -76,12 +82,13 @@ public class CarOfferImageService {
             System.out.println("Czy plik istnieje? " + Files.exists(filePath));
 
             boolean deleted = Files.deleteIfExists(filePath);
+            logger.info("Usunięto zdjęcie o nazwie: {}", image.getFileName());
             System.out.println("Czy usunięto? " + deleted);
             System.out.println("-----------------------------");
             
             imageRepository.delete(image);
         } catch (IOException e) {
-            System.err.println("BŁĄD podczas usuwania pliku: " + image.getFileName());
+            logger.warn("Nie udało się usunąć pliku: {}", image.getFileName());
             e.printStackTrace();
         }
     }

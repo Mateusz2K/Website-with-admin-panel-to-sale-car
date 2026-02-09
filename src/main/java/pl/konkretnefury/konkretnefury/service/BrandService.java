@@ -1,6 +1,8 @@
 package pl.konkretnefury.konkretnefury.service;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +21,7 @@ public class BrandService {
     private final BrandRepo brandRepository;
     private final BrandModelRepo brandsModelRepository;
     private final FileStorageService fileStorageService;
+    private final Logger logger= LoggerFactory.getLogger(BrandService.class);
 
     public BrandService(BrandRepo brandRepository, BrandModelRepo brandsModelRepository, FileStorageService fileStorageService) {
         this.brandRepository = brandRepository;

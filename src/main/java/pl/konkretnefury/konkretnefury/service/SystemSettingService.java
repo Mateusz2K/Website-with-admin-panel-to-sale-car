@@ -25,7 +25,6 @@ public class SystemSettingService {
     @Value("${file.upload-dir.icons}")
     private String iconUploadDir;
 
-    // ZMIANA: Wstrzyknięcie katalogu zdjęć samochodów (potrzebne do usuwania)
     @Value("${file.upload-dir.cars}")
     private String carPhotoUploadDir;
 
@@ -36,7 +35,14 @@ public class SystemSettingService {
 
     public String getDefaultOfferImageUrl() {
         return settingRepository.findById(DEFAULT_OFFER_IMAGE_KEY)
-                .map(SystemSetting::getSettingValue)
+                .map(setting -> {
+                    String val = setting.getSettingValue();
+                    // ZMIANA: Upewniamy się, że ścieżka zaczyna się od /
+                    if (val != null && !val.startsWith("/") && !val.startsWith("http")) {
+                        return "/" + val;
+                    }
+                    return val;
+                })
                 .orElse("/img/placeholder.png");
     }
 
@@ -47,18 +53,11 @@ public class SystemSettingService {
                 String oldPathUrl = oldSetting.get().getSettingValue();
                 if (oldPathUrl != null && !oldPathUrl.equals("/img/placeholder.png")) {
                     try {
-                        String fileName = oldPathUrl.substring(oldPathUrl.lastIndexOf("/") + 1).trim();
-                        // Używamy normalize() i toAbsolutePath(), żeby mieć pewność
-                        Path oldFilePath = Paths.get(carPhotoUploadDir, fileName).toAbsolutePath().normalize();
-
-                        System.out.println("Debug: Próbuję usunąć: " + oldFilePath);
-
-                        boolean deleted = Files.deleteIfExists(oldFilePath);
-                        if (!deleted) {
-                            System.err.println("Plik nie istnieje pod ścieżką: " + oldFilePath);
-                        }
+                        String fileName = oldPathUrl.substring(oldPathUrl.lastIndexOf("/") + 1);
+                        Path oldFilePath = Paths.get(carPhotoUploadDir, fileName);
+                        Files.deleteIfExists(oldFilePath);
                     } catch (IOException e) {
-                        System.err.println("Błąd uprawnień lub błąd WE/WY: " + e.getMessage());
+                        System.err.println("Nie udało się usunąć starej domyślnej grafiki: " + e.getMessage());
                     }
                 }
             }

@@ -31,8 +31,8 @@ public class SecurityConfig {
                 )
                 .formLogin((form) -> form
                         .loginPage("/login")
-                        .successForwardUrl("/admin/")
-                        .defaultSuccessUrl("/admin/", true)
+                        // ZMIANA: Usunięto successForwardUrl, zostawiono tylko defaultSuccessUrl
+                        .defaultSuccessUrl("/admin", true)
                         .permitAll()
                 )
                 .logout((logout) -> logout
