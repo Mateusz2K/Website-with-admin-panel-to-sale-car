@@ -77,7 +77,7 @@ header a img {
   top: 0;
   background-color: black;
   font-size: 2ex;
-  z-index: 100;
+  z-index: 2000;
 }
 
 #menu nav {

@@ -1,8 +1,8 @@
 package pl.konkretnefury.konkretnefury.modele;
 
 public enum TypPojazdu {
-    OSOBOWY("Osobowy"),
-    DOSTAWCZY("Dostawczy do 3.5t");
+    OSOBOWY("Osobowe"),
+    DOSTAWCZY("Dostawcze");
 
     private final String displayName;
 

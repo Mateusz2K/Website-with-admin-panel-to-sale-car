@@ -17,42 +17,101 @@
         <p class="lead text-muted">Przeglądaj wszystkie dostępne samochody.</p>
     </header>
 
-    <form th:action="@{/offers}" th:object="${filters}" method="get" class="row g-3 mb-5 p-4 bg-light rounded">
-        <div class="col-md-3"><label for="brandId" class="form-label">Marka</label><select id="brandId" class="form-select" th:field="*{brandId}"><option value="">Wszystkie</option><option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.nazwaMarki}"></option></select></div>
-        <div class="col-md-2"><label for="priceFrom" class="form-label">Cena od</label><input type="number" id="priceFrom" class="form-control" th:field="*{priceFrom}"></div>
-        <div class="col-md-2"><label for="priceTo" class="form-label">Cena do</label><input type="number" id="priceTo" class="form-control" th:field="*{priceTo}"></div>
-        <div class="col-md-2"><label for="yearFrom" class="form-label">Rok produkcji od</label><input type="number" id="yearFrom" class="form-control" th:field="*{yearFrom}"></div>
-        <div class="col-md-2"><label for="yearTo" class="form-label">Rok produkcji do</label><input type="number" id="yearTo" class="form-control" th:field="*{yearTo}"></div>
-        <div class="col-md-1 d-flex align-items-end"><button type="submit" class="btn btn-primary w-100">Filtruj</button></div>
-        <div class="col-md-12 text-end mt-2"><a th:href="@{/offers}" class="btn btn-secondary btn-sm">Wyczyść filtry</a></div>
+    <form th:action="@{/offers}" th:object="${filters}" method="get" class="mb-5 p-4 bg-light rounded shadow-sm">
+        <div class="row g-3">
+            <!-- Wiersz 1: Podstawowe -->
+            <div class="col-md-3"><label for="brandId" class="form-label">Marka</label><select id="brandId" class="form-select" th:field="*{brandId}"><option value="">Wszystkie</option><option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.nazwaMarki}"></option></select></div>
+            <div class="col-md-3">
+                <label for="RodzajNadwozia" class="form-label">Rodzaj nadwozia</label>
+                <select id="RodzajNadwozia" class="form-select" th:field="*{typNadwozia}">
+                    <option value="">Wszystkie</option>
+                    <option th:each="nadwozie : ${T(pl.konkretnefury.konkretnefury.modele.RodzajNadwozia).values()}"
+                            th:value="${nadwozie}"
+                            th:text="${nadwozie.displayName}"></option>
+                </select>
+            </div>
+            <div class="col-md-2"><label for="priceFrom" class="form-label">Cena od</label><input type="number" id="priceFrom" class="form-control" th:field="*{priceFrom}"></div>
+            <div class="col-md-2"><label for="priceTo" class="form-label">Cena do</label><input type="number" id="priceTo" class="form-control" th:field="*{priceTo}"></div>
+            <!-- Przycisk Filtruj w pierwszym wierszu (dla desktopu) -->
+
+        </div>
+
+        <div class="row g-3 mt-2">
+            <!-- Wiersz 2: Szczegółowe -->
+            <div class="col-md-3">
+                <label for="skrzyniaBiegow" class="form-label">Skrzynia biegów</label>
+                <select id="skrzyniaBiegow" class="form-select" th:field="*{skrzyniaBiegow}">
+                    <option value="">Wszystkie</option>
+                    <option th:each="skrzynia : ${T(pl.konkretnefury.konkretnefury.modele.SkrzyniaBiegow).values()}"
+                            th:value="${skrzynia}"
+                            th:text="${skrzynia.displayName}"></option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="typPojazdu" class="form-label">Kategoria</label>
+                <select id="typPojazdu" class="form-select" th:field="*{typPojazdu}">
+                    <option value="">Wszystkie</option>
+                    <option th:each="typ : ${T(pl.konkretnefury.konkretnefury.modele.TypPojazdu).values()}"
+                            th:value="${typ}"
+                            th:text="${typ.displayName}"></option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label for="rodzajPaliwa" class="form-label">Rodzaj paliwa</label>
+                <select id="rodzajPaliwa" class="form-select" th:field="*{rodzajPaliwa}">
+                    <option value="">Wszystkie</option>
+                    <option th:each="paliwo : ${T(pl.konkretnefury.konkretnefury.modele.RodzajPaliwa).values()}"
+                            th:value="${paliwo}"
+                            th:text="${paliwo.displayName}"></option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end"><button type="submit" class="btn btn-primary w-100">Szukaj</button></div>
+            <div class="col-md-3">
+                <label for="sort" class="form-label">Sortuj według</label>
+                <select id="sort" class="form-select" th:field="*{sort}" onchange="this.form.submit()">
+                    <option value="newest">Najnowsze</option>
+                    <option value="price_asc">Cena: rosnąco</option>
+                    <option value="price_desc">Cena: malejąco</option>
+                    <option value="name_asc">Nazwa: A-Z</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12 text-end">
+                <a th:href="@{/offers}" class="btn btn-link text-decoration-none text-secondary"><i class="fas fa-times"></i> Wyczyść filtry</a>
+            </div>
+        </div>
     </form>
 
     <div class="row">
         <div th:each="offer : ${offersPage.content}" class="col-md-6 col-lg-4 mb-4">
             <div class="card offer-card h-100 border"
-                 th:classappend="${offer.status?.name() == 'DOSTĘPNY'} ? 'border-primary' : (${offer.status?.name() == 'ZAREZERWOWANY'} ? 'border-warning' : 'border-secondary')">
+                 th:classappend="${offer.status?.name() == 'DOSTĘPNY'} ? 'border-primary' : (${offer.status?.name() == 'ZAREZERWOWANY'} ? 'border-secondary' : 'border-secondary')">
                 <div class="card-img-container">
                     <th:block th:with="mainImage=${offer.getMainImage().orElse(null)}">
                         <img th:if="${mainImage != null}" th:src="@{/car_photo/{fileName}(fileName=${mainImage.fileName})}" class="card-img-top" alt="..." loading="lazy">
                         <img th:if="${mainImage == null}" th:src="@{${@systemSettingService.getDefaultOfferImageUrl()}}" class="card-img-top" alt="..." loading="lazy">
                     </th:block>
-                    <div th:if="${offer.status?.name() == 'ZAREZERWOWANY' or offer.status?.name() == 'SPRZEDANY'}" class="status-overlay" th:text="${offer.status.displayName}"></div>
+                    <div th:if="${offer.status?.name() == 'ZAREZERWOWANY' or offer.status?.name() == 'SPRZEDANY' or offer.status?.name() == 'WKROTCE'}" class="status-overlay" th:text="${offer.status.displayName}"></div>
                 </div>
                 <div class="card-body d-flex flex-column">
                     <h5 class="card-title" th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></h5>
                     <p class="card-text fw-bold text-primary mb-1" th:if="${offer.naglowek != null and !offer.naglowek.isEmpty()}" th:text="${offer.naglowek}"></p>
 
-                    <!-- ZMIANA: Nowa linia z podsumowaniem -->
                     <p class="card-text text-muted small">
                         <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span> &bull;
                         <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span> &bull;
+                        <span th:if="${offer.pojemonscSilnika != null}" th:text="${offer.pojemonscSilnika}"></span> &bull;
                         <span th:if="${offer.skrzyniaBiegow != null}" th:text="${offer.skrzyniaBiegow.displayName}"></span> &bull;
                         <span th:if="${offer.rodzajPaliwa != null}" th:text="${offer.rodzajPaliwa.displayName}"></span>
                     </p>
 
                     <th:block th:if="${offer.status?.name() == 'SPRZEDANY'}"><h6 class="price mt-auto text-danger">Sprzedany</h6></th:block>
                     <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}"><h6 class="price mt-auto" th:text="${{offer.cena}}"></h6></th:block>
-                    <a th:href="@{/offers/{id}(id=${offer.id})}" class="btn btn-outline-primary mt-2">Zobacz Szczegóły</a>
+                    <a th:href="@{/offers/{id}(id=${offer.id})}" class="btn btn-primary btn-offer stretched-link mt-2">Zobacz Szczegóły</a>
                 </div>
             </div>
         </div>
@@ -61,9 +120,9 @@
 
     <nav th:if="${offersPage.totalPages > 1}" aria-label="Page navigation">
         <ul class="pagination justify-content-center">
-            <li class="page-item" th:classappend="${offersPage.first} ? 'disabled'"><a class="page-link" th:href="@{/offers(page=${offersPage.number - 1},brandId=${filters.brandId})}">Poprzednia</a></li>
-            <li th:each="i : ${#numbers.sequence(0, offersPage.totalPages - 1)}" class="page-item" th:classappend="${i == offersPage.number} ? 'active'"><a class="page-link" th:href="@{/offers(page=${i},brandId=${filters.brandId})}" th:text="${i + 1}"></a></li>
-            <li class="page-item" th:classappend="${offersPage.last} ? 'disabled'"><a class="page-link" th:href="@{/offers(page=${offersPage.number + 1},brandId=${filters.brandId})}">Następna</a></li>
+            <li class="page-item" th:classappend="${offersPage.first} ? 'disabled'"><a class="page-link" th:href="@{/offers(page=${offersPage.number - 1},brandId=${filters.brandId},sort=${filters.sort},skrzyniaBiegow=${filters.skrzyniaBiegow},typPojazdu=${filters.typPojazdu},rodzajPaliwa=${filters.rodzajPaliwa},priceFrom=${filters.priceFrom},priceTo=${filters.priceTo},yearFrom=${filters.yearFrom},yearTo=${filters.yearTo})}">Poprzednia</a></li>
+            <li th:each="i : ${#numbers.sequence(0, offersPage.totalPages - 1)}" class="page-item" th:classappend="${i == offersPage.number} ? 'active'"><a class="page-link" th:href="@{/offers(page=${i},brandId=${filters.brandId},sort=${filters.sort},skrzyniaBiegow=${filters.skrzyniaBiegow},typPojazdu=${filters.typPojazdu},rodzajPaliwa=${filters.rodzajPaliwa},priceFrom=${filters.priceFrom},priceTo=${filters.priceTo},yearFrom=${filters.yearFrom},yearTo=${filters.yearTo})}" th:text="${i + 1}"></a></li>
+            <li class="page-item" th:classappend="${offersPage.last} ? 'disabled'"><a class="page-link" th:href="@{/offers(page=${offersPage.number + 1},brandId=${filters.brandId},sort=${filters.sort},skrzyniaBiegow=${filters.skrzyniaBiegow},typPojazdu=${filters.typPojazdu},rodzajPaliwa=${filters.rodzajPaliwa},priceFrom=${filters.priceFrom},priceTo=${filters.priceTo},yearFrom=${filters.yearFrom},yearTo=${filters.yearTo})}">Następna</a></li>
         </ul>
     </nav>
 </main>

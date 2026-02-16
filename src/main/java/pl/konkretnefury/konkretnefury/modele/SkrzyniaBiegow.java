@@ -1,8 +1,8 @@
 package pl.konkretnefury.konkretnefury.modele;
 
 public enum SkrzyniaBiegow {
-    MANUALNA("Manual"),
-    AUTOMATYCZNA("Automat");
+    MANUALNA("Manualna"),
+    AUTOMATYCZNA("Automatyczna");
 
     private final String displayName;
 

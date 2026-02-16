@@ -7,22 +7,25 @@
     <meta name="description" content="AutoKonkret - znajdź idealny samochód dla siebie. Oferujemy szeroki wybór pojazdów, aktualności i promocje.">
     <title>AutoKonkret - Twoje wymarzone samochody</title>
 
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/photo/favicon_io/apple-touch-icon.png}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/photo/favicon_io/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/photo/favicon_io/favicon-16x16.png}">
+    <link rel="manifest" th:href="@{/photo/favicon_io/site.webmanifest}">
+    <link rel="shortcut icon" th:href="@{/photo/favicon_io/favicon.ico}">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    <!-- Twoje style -->
     <link rel="stylesheet" th:href="@{/css/home-style.css}">
     <link rel="stylesheet" th:href="@{/style.css}">
 
     <style>
-        /* ... (style dla wideo, social, galerii bez zmian) ... */
         .hero-section {
             position: relative;
             overflow: hidden;
-            height: 100vh; /* Sztywna wysokość na cały ekran */
-            width: 100%;
+            min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -45,7 +48,6 @@
             width: 100%;
             padding: 0 20px;
         }
-
         .social-card {
             background: white;
             border-radius: 15px;
@@ -65,6 +67,7 @@
         }
         .fb-header { background-color: #1877f2; }
         .tt-header { background-color: #000000; }
+        .yt-header { background-color: #FF0000; }
 
         .gallery-wrapper {
             position: relative;
@@ -120,6 +123,42 @@
         .gallery-nav-btn:hover { background: black; }
         .gallery-nav-btn.left { left: 0; }
         .gallery-nav-btn.right { right: 0; }
+
+        /* ZMIANA: Style dla karuzeli marek */
+        .brands-carousel {
+            overflow: hidden;
+            position: relative;
+            width: 100%;
+            padding: 20px 0;
+        }
+        .brands-track {
+            display: flex;
+            width: calc(200px * 14);
+            animation: scroll 40s linear infinite;
+        }
+        .brand-logo {
+            width: 200px;
+            padding: 0 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .brand-logo img {
+            max-width: 100%;
+            max-height: 60px;
+            filter: grayscale(100%);
+            opacity: 0.6;
+            transition: 0.3s;
+        }
+        .brand-logo:hover img {
+            filter: grayscale(0%);
+            opacity: 1;
+            transform: scale(1.1);
+        }
+        @keyframes scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(calc(-200px * 7)); } /* 1x liczba marek */
+        }
     </style>
 </head>
 <body>
@@ -131,7 +170,7 @@
     <section class="hero-section px-4 py-5 text-center">
         <video class="hero-video"  autoplay loop muted preload="metadata" playsinline>
             <source src="/photo/konkretFilm1.mp4" type="video/mp4">
-<!--            <source src="/photo/videoPorshe.webm" type="video/webm">-->
+            <source src="/photo/konkretFilm1.webm" type="video/webm">
             Twój system nie obsługuje wideo.
         </video>
 
@@ -141,6 +180,66 @@
             </div>
             <p class="fs-4 my-2">Bo auto to nie loteria - wybierz konkret</p>
             <a th:href="@{/offers}" class="btn btn-primary btn-lg px-4 gap-3" role="button">Zobacz ofertę</a>
+        </div>
+    </section>
+    <section class="featured-offers py-5 content bg-light">
+        <div class="container">
+            <div class="row g-4">
+                <div th:each="offer : ${featuredOffers}" class="col-md-6 col-lg-4">
+                    <div class="card offer-card h-100 border shadow-sm"
+                         th:classappend="${offer.status?.name() == 'DOSTĘPNY'} ? 'border-primary' : (${offer.status?.name() == 'ZAREZERWOWANY'} ? 'border-warning' : 'border-secondary')">
+                        <div class="card-img-container position-relative overflow-hidden" style="height: 250px;">
+                            <th:block th:with="mainImage=${offer.getMainImage().orElse(null)}">
+                                <img th:if="${mainImage != null}" th:src="@{/car_photo/{fileName}(fileName=${mainImage.fileName})}" class="card-img-top w-100 h-100 object-fit-cover" alt="Zdjęcie samochodu" loading="lazy">
+                                <img th:if="${mainImage == null}" th:src="@{${@systemSettingService.getDefaultOfferImageUrl()}}" class="card-img-top w-100 h-100 object-fit-cover" alt="Brak zdjęcia" loading="lazy">
+                            </th:block>
+                            <div th:if="${offer.status?.name() == 'ZAREZERWOWANY' or offer.status?.name() == 'SPRZEDANY' or offer.status?.name() == 'WKROTCE'}" class="status-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 text-white fw-bold fs-4" th:text="${offer.status.displayName}"></div>
+                        </div>
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold" th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></h5>
+                            <p class="card-text fw-bold text-primary mb-1" th:if="${offer.naglowek != null and !offer.naglowek.isEmpty()}" th:text="${offer.naglowek}"></p>
+                            <p class="card-text text-muted small mb-3">
+                                <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span> &bull;
+                                <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span> &bull;
+                                <span th:if="${offer.pojemonscSilnika != null}" th:text="${offer.pojemonscSilnika}"></span> &bull;
+                                <span th:if="${offer.skrzyniaBiegow != null}" th:text="${offer.skrzyniaBiegow.displayName}"></span> &bull;
+                                <span th:if="${offer.rodzajPaliwa != null}" th:text="${offer.rodzajPaliwa.displayName}"></span>
+                            </p>
+                            <div class="mt-auto">
+                                <th:block th:if="${offer.status?.name() == 'SPRZEDANY'}">
+                                    <h6 class="price text-danger fw-bold mb-3">Sprzedany</h6>
+                                </th:block>
+                                <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}">
+                                    <h6 class="price fw-bold mb-3" th:text="${@priceFormatter.print(offer.cena, #locale)}"></h6>
+                                </th:block>
+                                <a th:href="@{/offers/{id}(id=${offer.id})}" class="btn btn-offer btn-outline-primary stretched-link w-100">Zobacz Szczegóły</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sekcja kategorii -->
+            <!--            <div class="row mt-5 text-center g-4">-->
+            <!--                <div class="col-md-4">-->
+            <!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
+            <!--                        <h4>SUV</h4>-->
+            <!--                        <p class="text-muted">Przestrzeń, komfort, bezpieczeństwo.</p>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--                <div class="col-md-4">-->
+            <!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
+            <!--                        <h4>Sportowe</h4>-->
+            <!--                        <p class="text-muted">Maksymalna moc i emocje za kierownicą.</p>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--                <div class="col-md-4">-->
+            <!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
+            <!--                        <h4>Miejskie</h4>-->
+            <!--                        <p class="text-muted">Idealne do codziennej jazdy w mieście.</p>-->
+            <!--                    </div>-->
+            <!--                </div>-->
+            <!--            </div>-->
         </div>
     </section>
 
@@ -181,84 +280,38 @@
         </div>
     </section>
 
-    <!-- ... reszta strony bez zmian ... -->
+    <!-- ZMIANA: Galeria dynamiczna -->
     <section class="py-5">
         <div class="container">
             <h2 class="text-center mb-5 display-5 fw-bold">Galeria</h2>
             <div class="gallery-wrapper">
                 <button class="gallery-nav-btn left" onclick="scrollGallery(-1)"><i class="fas fa-chevron-left"></i></button>
                 <div class="gallery-scroll" id="galleryScroll">
-                    <div class="gallery-img-container" onclick="openModal(this)"><img th:src="@{/photo/1.jpeg}" alt="Image 1" loading="lazy"></div>
-                    <div class="gallery-img-container" onclick="openModal(this)"><img th:src="@{/photo/2.jpeg}" alt="Image 2" loading="lazy"></div>
-                    <div class="gallery-img-container" onclick="openModal(this)"><img th:src="@{/photo/3.jpeg}" alt="Image 3" loading="lazy"></div>
-                    <div class="gallery-img-container" onclick="openModal(this)"><img th:src="@{/photo/4.jpeg}" alt="Image 4" loading="lazy"></div>
-                    <div class="gallery-img-container" onclick="openModal(this)"><img th:src="@{/photo/5.jpeg}" alt="Image 5" loading="lazy"></div>
-                    <div class="gallery-img-container" onclick="openModal(this)"><img th:src="@{/photo/6.jpeg}" alt="Image 6" loading="lazy"></div>
-                    <div class="gallery-img-container" onclick="openModal(this)"><img th:src="@{/photo/7.jpeg}" alt="Image 7" loading="lazy"></div>
+                    <div th:each="imageUrl : ${galleryImages}" class="gallery-img-container" onclick="openModal(this)">
+                        <img th:src="@{${imageUrl}}" alt="Image 1" loading="lazy">
+                    </div>
+                    <div th:if="${galleryImages.empty}" class="text-center w-100 p-5">
+                        <p class="lead text-muted">Galeria jest obecnie pusta.</p>
+                    </div>
                 </div>
                 <button class="gallery-nav-btn right" onclick="scrollGallery(1)"><i class="fas fa-chevron-right"></i></button>
             </div>
         </div>
     </section>
 
-    <section class="featured-offers py-5 content bg-light">
+    <section class="py-4 border-bottom border-top">
         <div class="container">
-            <h2 class="text-center mb-5 display-4 fw-bold">Promowane Oferty</h2>
-            <div class="row g-4">
-                <div th:each="offer : ${featuredOffers}" class="col-md-6 col-lg-4">
-                    <div class="card offer-card h-100 border shadow-sm"
-                         th:classappend="${offer.status?.name() == 'DOSTĘPNY'} ? 'border-primary' : (${offer.status?.name() == 'ZAREZERWOWANY'} ? 'border-warning' : 'border-secondary')">
-                        <div class="card-img-container position-relative overflow-hidden" style="height: 250px;">
-                            <th:block th:with="mainImage=${offer.getMainImage().orElse(null)}">
-                                <img th:if="${mainImage != null}" th:src="@{/car_photo/{fileName}(fileName=${mainImage.fileName})}" class="card-img-top w-100 h-100 object-fit-cover" alt="Zdjęcie samochodu" loading="lazy">
-                                <img th:if="${mainImage == null}" th:src="@{${@systemSettingService.getDefaultOfferImageUrl()}}" class="card-img-top w-100 h-100 object-fit-cover" alt="Brak zdjęcia" loading="lazy">
-                            </th:block>
-                            <div th:if="${offer.status?.name() == 'ZAREZERWOWANY' or offer.status?.name() == 'SPRZEDANY' or offer.status?.name() == 'WKROTCE'}" class="status-overlay position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-dark bg-opacity-50 text-white fw-bold fs-4" th:text="${offer.status.displayName}"></div>
-                        </div>
-                        <div class="card-body d-flex flex-column">
-                            <h5 class="card-title fw-bold" th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></h5>
-                            <p class="card-text fw-bold text-primary mb-1" th:if="${offer.naglowek != null and !offer.naglowek.isEmpty()}" th:text="${offer.naglowek}"></p>
-                            <p class="card-text text-muted small mb-3">
-                                <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span> &bull;
-                                <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span> &bull;
-                                <span th:if="${offer.skrzyniaBiegow != null}" th:text="${offer.skrzyniaBiegow.displayName}"></span> &bull;
-                                <span th:if="${offer.rodzajPaliwa != null}" th:text="${offer.rodzajPaliwa.displayName}"></span>
-                            </p>
-                            <div class="mt-auto">
-                                <th:block th:if="${offer.status?.name() == 'SPRZEDANY'}">
-                                    <h6 class="price text-danger fw-bold mb-3">Sprzedany</h6>
-                                </th:block>
-                                <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}">
-                                    <h6 class="price fw-bold mb-3" th:text="${@priceFormatter.print(offer.cena, #locale)}"></h6>
-                                </th:block>
-                                <a th:href="@{/offers/{id}(id=${offer.id})}" class="btn btn-outline-primary w-100">Zobacz Szczegóły</a>
-                            </div>
-                        </div>
+            <div class="brands-carousel">
+                <div class="brands-track">
+                    <!-- Podwójna pętla dla płynnego przewijania -->
+                    <div th:each="brand : ${brands}" class="brand-logo">
+                        <img th:if="${brand.iconUrl}" th:src="@{${brand.iconUrl}}" th:alt="${brand.nazwaMarki}">
+                    </div>
+                    <div th:each="brand : ${brands}" class="brand-logo">
+                        <img th:if="${brand.iconUrl}" th:src="@{${brand.iconUrl}}" th:alt="${brand.nazwaMarki}">
                     </div>
                 </div>
             </div>
-
-            <!-- Sekcja kategorii -->
-<!--            <div class="row mt-5 text-center g-4">-->
-<!--                <div class="col-md-4">-->
-<!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
-<!--                        <h4>SUV</h4>-->
-<!--                        <p class="text-muted">Przestrzeń, komfort, bezpieczeństwo.</p>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="col-md-4">-->
-<!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
-<!--                        <h4>Sportowe</h4>-->
-<!--                        <p class="text-muted">Maksymalna moc i emocje za kierownicą.</p>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <div class="col-md-4">-->
-<!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
-<!--                        <h4>Miejskie</h4>-->
-<!--                        <p class="text-muted">Idealne do codziennej jazdy w mieście.</p>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
         </div>
     </section>
 

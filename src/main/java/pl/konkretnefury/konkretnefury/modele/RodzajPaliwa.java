@@ -2,7 +2,6 @@ package pl.konkretnefury.konkretnefury.modele;
 
 public enum RodzajPaliwa {
     BENZYNA("Benzyna"),
-    BENZYNA_CNG("Benzyna+CNG"),
     BENZYNA_LPG("Benzyna+LPG"),
     DIESEL("Diesel"),
     HYBRYDA("Hybryda"),

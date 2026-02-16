@@ -1,12 +1,16 @@
 package pl.konkretnefury.konkretnefury.modele;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
 
 @Entity
 public class SystemSetting {
     @Id
     private String settingKey;
+    @Lob
+    @Column(columnDefinition = "TEXT")
     private String settingValue;
 
     public SystemSetting() {}

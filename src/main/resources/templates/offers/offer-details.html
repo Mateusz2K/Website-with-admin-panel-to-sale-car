@@ -129,8 +129,8 @@
                         <li class="list-group-item d-flex justify-content-between"><strong>Przebieg:</strong> <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Pojemność:</strong> <span th:text="${@volumeFormatter.print(offer.pojemonscSilnika, #locale)}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Moc:</strong> <span th:text="${@powerFormatter.print(offer.moc, #locale)}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajPaliwa != null}"><strong>Paliwo:</strong> <span th:text="${offer.rodzajPaliwa.displayName}"></span></li>
-                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.skrzyniaBiegow != null}"><strong>Skrzyni biegówa:</strong> <span th:text="${offer.skrzyniaBiegow.displayName}"></span></li>
+                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajPaliwa != null}"><strong>Rodzaj paliwa:</strong> <span th:text="${offer.rodzajPaliwa.displayName}"></span></li>
+                        <li class="list-group-item d-flex justify-content-between" th:if="${offer.skrzyniaBiegow != null}"><strong>Skrzynia biegów:</strong> <span th:text="${offer.skrzyniaBiegow.displayName}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajNadwozia != null}"><strong>Nadwozie:</strong> <span th:text="${offer.rodzajNadwozia.displayName}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.rodzajNadwoziaCiezarowe != null}"><strong>Nadwozie:</strong> <span th:text="${offer.rodzajNadwoziaCiezarowe.displayName}"></span></li>
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.kolor != null}"><strong>Kolor:</strong> <span th:text="${offer.kolor}"></span></li>
@@ -150,7 +150,7 @@
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.typPojazdu != null}"><strong>Typ:</strong> <span th:text="${offer.typPojazdu.displayName}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Status:</strong> <span class="badge" th:classappend="${offer.status?.name() == 'DOSTĘPNY' ? 'bg-success' : 'bg-warning'}" th:text="${offer.status?.displayName}"></span></li>
                     </ul>
-                    <a href="#" class="btn btn-primary w-100 mt-4 btn-lg">Skontaktuj się</a>
+                    <a href="tel:+48693265264" class="btn btn-primary w-100 mt-4 btn-lg" >&#128222 +48 693 265 264</a>
                 </div>
             </div>
         </div>

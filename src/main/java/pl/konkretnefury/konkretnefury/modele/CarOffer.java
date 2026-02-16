@@ -28,12 +28,14 @@ public class CarOffer {
     @PowerFormat private Integer moc;
     @VolumeFormat private Integer pojemonscSilnika;
     
-    // ZMIANA: Zmiana typu na enum
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
     private KrajPochodzenia krajPochodzenia;
     
     private String kolor;
+    
+    // ZMIANA: Zwiększenie limitu znaków dla gwarancji
+    @Column(columnDefinition = "TEXT")
     private String gwarancjaOpis;
 
     @Enumerated(EnumType.STRING) @Column(length = 50) private SkrzyniaBiegow skrzyniaBiegow;
@@ -44,7 +46,12 @@ public class CarOffer {
     @Enumerated(EnumType.STRING) @Column(length = 50) private RodzajNadwoziaCiezarowe rodzajNadwoziaCiezarowe;
 
     private String liczba_drzwi;
-    @Lob private String opis;
+    
+    // ZMIANA: Zwiększenie limitu znaków dla opisu
+    @Lob 
+    @Column(columnDefinition = "TEXT")
+    private String opis;
+    
     @Enumerated(EnumType.STRING) @Column(length = 50) private StatusOfCar status;
     private boolean isFeatured = false;
     @CreationTimestamp private LocalDateTime creationDate;
@@ -99,11 +106,8 @@ public class CarOffer {
     public void setMoc(Integer moc) { this.moc = moc; }
     public Integer getPojemonscSilnika() { return pojemonscSilnika; }
     public void setPojemonscSilnika(Integer pojemonscSilnika) { this.pojemonscSilnika = pojemonscSilnika; }
-    
-    // ZMIANA: Getter i Setter dla nowego typu
     public KrajPochodzenia getKrajPochodzenia() { return krajPochodzenia; }
     public void setKrajPochodzenia(KrajPochodzenia krajPochodzenia) { this.krajPochodzenia = krajPochodzenia; }
-
     public String getKolor() { return kolor; }
     public void setKolor(String kolor) { this.kolor = kolor; }
     public String getGwarancjaOpis() { return gwarancjaOpis; }

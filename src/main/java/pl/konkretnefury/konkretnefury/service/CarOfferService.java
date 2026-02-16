@@ -2,16 +2,17 @@ package pl.konkretnefury.konkretnefury.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
 import pl.konkretnefury.konkretnefury.dto.OfferFilterDTO;
 import pl.konkretnefury.konkretnefury.modele.CarOffer;
@@ -119,31 +120,70 @@ public class CarOfferService {
     public void deleteOffer(UUID id) {
         logger.warn("Usuwanie oferty o ID: {}", id);
         carOfferRepository.findById(id).ifPresent(offer -> {
-            Path offerDirectory = Paths.get(carPhotoUploadDir).resolve(offer.getId().toString());
+            // ZMIANA: Użycie FileSystemUtils i poprawne budowanie ścieżki
             try {
+                Path uploadPath = Paths.get(carPhotoUploadDir).toAbsolutePath().normalize();
+                Path offerDirectory = uploadPath.resolve(offer.getId().toString());
+                
+                logger.info("Próba usunięcia katalogu: {}", offerDirectory);
+                
                 if (Files.exists(offerDirectory)) {
-                    FileUtils.deleteDirectory(offerDirectory.toFile());
-                    logger.info("Usunięto katalog zdjęć: {}", offerDirectory);
+                    boolean deleted = FileSystemUtils.deleteRecursively(offerDirectory);
+                    if (deleted) {
+                        logger.info("Pomyślnie usunięto katalog zdjęć.");
+                    } else {
+                        logger.error("Nie udało się usunąć katalogu (FileSystemUtils zwrócił false).");
+                    }
+                } else {
+                    logger.warn("Katalog zdjęć nie istnieje: {}", offerDirectory);
                 }
-            } catch (IOException e) {
-                logger.error("Nie udało się usunąć folderu: " + id, e);
+            } catch (Exception e) {
+                logger.error("Błąd podczas usuwania katalogu zdjęć: " + id, e);
             }
         });
         carOfferRepository.deleteById(id);
     }
     
     public Page<CarOffer> findWithFilters(OfferFilterDTO filters, Pageable pageable) {
+        // ZMIANA: Obsługa sortowania
+        Sort sort = Sort.unsorted();
+        if (filters.getSort() != null) {
+            switch (filters.getSort()) {
+                case "price_asc":
+                    sort = Sort.by("cena").ascending();
+                    break;
+                case "price_desc":
+                    sort = Sort.by("cena").descending();
+                    break;
+                case "name_asc":
+                    sort = Sort.by("brand.nazwaMarki").ascending().and(Sort.by("model.model").ascending());
+                    break;
+                case "newest":
+                    sort = Sort.by("creationDate").descending();
+                    break;
+                default:
+                    sort = Sort.by("creationDate").descending(); // Domyślne sortowanie
+            }
+        } else {
+            sort = Sort.by("creationDate").descending();
+        }
+
+        // Tworzymy nowy obiekt Pageable z uwzględnieniem sortowania
+        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
+
         Specification<CarOffer> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (filters.getBrandId() != null) predicates.add(cb.equal(root.get("brand").get("id"), filters.getBrandId()));
             if (filters.getPriceFrom() != null) predicates.add(cb.greaterThanOrEqualTo(root.get("cena"), filters.getPriceFrom()));
             if (filters.getPriceTo() != null) predicates.add(cb.lessThanOrEqualTo(root.get("cena"), filters.getPriceTo()));
             if (filters.getYearFrom() != null) predicates.add(cb.greaterThanOrEqualTo(root.get("rok"), filters.getYearFrom()));
-            if (filters.getYearTo() != null) predicates.add(cb.lessThanOrEqualTo(root.get("rok"), filters.getYearTo()));
+            if (filters.getSkrzyniaBiegow() != null) predicates.add(cb.equal(root.get("skrzyniaBiegow"), filters.getSkrzyniaBiegow()));
+            if (filters.getRodzajPaliwa() != null) predicates.add(cb.equal(root.get("rodzajPaliwa"), filters.getRodzajPaliwa()));
             if (filters.getTypNadwozia() != null) predicates.add(cb.equal(root.get("rodzajNadwozia"), filters.getTypNadwozia()));
+            if (filters.getTypPojazdu() != null) predicates.add(cb.equal(root.get("typPojazdu"), filters.getTypPojazdu()));
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        return carOfferRepository.findAll(spec, pageable);
+        return carOfferRepository.findAll(spec, sortedPageable);
     }
     public List<CarOffer> getAllOffers() { return carOfferRepository.findAll(); }
     public Optional<CarOffer> getOfferById(UUID id) { return carOfferRepository.findById(id);}

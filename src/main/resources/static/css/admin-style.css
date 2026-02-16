@@ -11,8 +11,6 @@ body {
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
 
-/* USUNIĘTO: Problematyczny styl dla thead, który powodował błędy w wyświetlaniu */
-
 .form-container {
     background-color: #fff;
     padding: 2rem;
@@ -26,4 +24,15 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+}
+
+/* ZMIANA: Ciemne strzałki karuzeli */
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    filter: invert(1) grayscale(100); /* Odwraca biały na czarny */
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+    width: 5%; /* Węższe obszary kliknięcia, żeby nie zasłaniały zdjęcia */
 }
