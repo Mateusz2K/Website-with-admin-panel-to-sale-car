@@ -39,7 +39,7 @@
             height: 100%;
             object-fit: cover; /* Kluczowe: wypełnia cały kontener, przycinając nadmiar */
             z-index: -1;
-            filter: brightness(0.6);
+            filter: brightness(0.5); /* Mocniejsze przyciemnienie dla lepszej czytelności */
         }
         .hero-content {
             position: relative;
@@ -47,6 +47,48 @@
             text-align: center;
             width: 100%;
             padding: 0 20px;
+        }
+
+        /* ZMIANA: Style dla mini-kafelków w Hero */
+        .hero-offer-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            color: white;
+            text-align: left;
+            margin: 0 10px; /* Odstęp między kafelkami */
+        }
+        .hero-offer-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+        }
+        .hero-offer-card img {
+            height: 150px;
+            width: 100%;
+            object-fit: cover;
+        }
+        .hero-offer-card .card-body {
+            padding: 10px;
+        }
+        .hero-offer-card h5 {
+            font-size: 1rem;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .hero-offer-card p {
+            font-size: 0.8rem;
+            margin-bottom: 0;
+            opacity: 0.8;
+        }
+
+        /* Style dla karuzeli Hero */
+        .hero-carousel .carousel-item {
+            height: auto; /* Dostosowanie wysokości */
         }
         .social-card {
             background: white;
@@ -124,7 +166,6 @@
         .gallery-nav-btn.left { left: 0; }
         .gallery-nav-btn.right { right: 0; }
 
-        /* ZMIANA: Style dla karuzeli marek */
         .brands-carousel {
             overflow: hidden;
             position: relative;
@@ -178,8 +219,45 @@
             <div class="linia">
                 <a href="/"><img style="width: 90%; height: 90%;" th:src="@{/photo/naklejka_biala1.png}" alt="logo"></a>
             </div>
-            <p class="fs-4 my-2">Bo auto to nie loteria - wybierz konkret</p>
-            <a th:href="@{/offers}" class="btn btn-primary btn-lg px-4 gap-3" role="button">Zobacz ofertę</a>
+            <p class="fs-3 fw-bold mt-4 mb-5">Bo auto to nie loteria - wybierz konkret</p>
+
+            <!-- ZMIANA: Karuzela z promowanymi ofertami w Hero -->
+            <div id="heroCarousel" class="carousel slide hero-carousel mt-5 pt-2" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <!-- Grupowanie ofert po 3 (dla desktopu) - uproszczona wersja: 1 oferta na slajd dla responsywności -->
+                    <!-- Można to rozbudować o JS dla wielu kafelków, ale na start 1 kafelek na środku wygląda elegancko -->
+                    <div th:each="offer, iterStat : ${featuredOffers}" class="carousel-item" th:classappend="${iterStat.first ? 'active' : ''}">
+                        <div class="d-flex justify-content-center pt-2">
+                            <a th:href="@{/offers/{id}(id=${offer.id})}" class="text-decoration-none" style="width: 300px;">
+                                <div class="hero-offer-card">
+                                    <th:block th:with="mainImage=${offer.getMainImage().orElse(null)}">
+                                        <img th:if="${mainImage != null}" th:src="@{'/car_photo/' + ${mainImage.fileName}}" alt="Auto">
+                                        <img th:if="${mainImage == null}" th:src="@{${@systemSettingService.getDefaultOfferImageUrl()}}" alt="Auto">
+                                    </th:block>
+                                    <div class="card-body">
+                                        <h5 th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}">Marka Model</h5>
+                                        <p>
+                                            <span th:text="${offer.rok}">2020</span> &bull;
+                                            <span th:text="${@priceFormatter.print(offer.cena, #locale)}">100 000 PLN</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Poprzedni</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Następny</span>
+                </button>
+            </div>
+            <div class="mt-4">
+                <a th:href="@{/offers}" class="btn btn-primary btn-lg px-5 py-3 gap-3 fw-bold" role="button">Zobacz wszystkie oferty</a>
+            </div>
         </div>
     </section>
     <section class="featured-offers py-5 content bg-light">
@@ -248,8 +326,7 @@
         <div class="container">
             <h2 class="text-center mb-5 display-5 fw-bold">Dołącz do nas</h2>
             <div class="row justify-content-center g-4">
-                <!-- Facebook -->
-                <div class="col-md-6 col-lg-5">
+                <div class="col-lg-4 col-md-6">
                     <div class="social-card">
                         <div class="social-header fb-header">
                             <i class="fab fa-facebook fa-lg me-2"></i> Facebook
@@ -259,8 +336,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- TikTok -->
-                <div class="col-md-6 col-lg-5">
+                <div class="col-lg-4 col-md-6">
                     <div class="social-card text-center d-flex flex-column">
                         <div class="social-header tt-header">
                             <i class="fab fa-tiktok fa-lg me-2"></i> TikTok
