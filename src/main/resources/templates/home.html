@@ -48,6 +48,34 @@
             width: 100%;
             padding: 0 20px;
         }
+        .hero-offers-wrapper {
+            position: relative;
+            margin-top: 3rem;
+            padding: 0 40px; /* Miejsce na strzałki */
+        }
+        .hero-offers-scroll {
+            display: flex;
+            gap: 20px;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 10px 0;
+            scrollbar-width: none; /* Ukryj pasek przewijania */
+            scroll-snap-type: x mandatory;
+        }
+        .hero-offers-scroll::-webkit-scrollbar { display: none; }
+
+        .hero-offer-item {
+            flex: 0 0 auto;
+            width: 100%; /* Mobile: 1 kafelek */
+            scroll-snap-align: center;
+        }
+
+        @media (min-width: 768px) {
+            .hero-offer-item { width: calc(50% - 10px); } /* Tablet: 2 kafelki */
+        }
+        @media (min-width: 992px) {
+            .hero-offer-item { width: calc(33.333% - 14px); } /* Desktop: 3 kafelki */
+        }
 
         /* ZMIANA: Style dla mini-kafelków w Hero */
         .hero-offer-card {
@@ -198,7 +226,7 @@
         }
         @keyframes scroll {
             0% { transform: translateX(0); }
-            100% { transform: translateX(calc(-200px * 7)); } /* 1x liczba marek */
+            100% { transform: translateX(calc(-200px * 7)); }
         }
     </style>
 </head>
@@ -222,7 +250,9 @@
             <p class="fs-3 fw-bold mt-4 mb-5">Bo auto to nie loteria - wybierz konkret</p>
 
             <!-- ZMIANA: Karuzela z promowanymi ofertami w Hero -->
-            <div id="heroCarousel" class="carousel slide hero-carousel mt-5 pt-2" data-bs-ride="carousel">
+            
+            <!-- WERSJA MOBILNA (1 kafelek) - widoczna tylko poniżej lg -->
+            <div id="heroCarouselMobile" class="carousel slide hero-carousel mt-5 pt-2 d-lg-none" data-bs-ride="carousel" th:if="${not #lists.isEmpty(featuredOffers)}">
                 <div class="carousel-inner">
                     <!-- Grupowanie ofert po 3 (dla desktopu) - uproszczona wersja: 1 oferta na slajd dla responsywności -->
                     <!-- Można to rozbudować o JS dla wielu kafelków, ale na start 1 kafelek na środku wygląda elegancko -->
@@ -246,16 +276,58 @@
                         </div>
                     </div>
                 </div>
-                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarouselMobile" data-bs-slide="prev">
                     <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Poprzedni</span>
                 </button>
-                <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarouselMobile" data-bs-slide="next">
                     <span class="carousel-control-next-icon" aria-hidden="true"></span>
                     <span class="visually-hidden">Następny</span>
                 </button>
             </div>
-            <div class="mt-4">
+
+            <!-- WERSJA DESKTOP (3 kafelki) - widoczna od lg w górę -->
+            <div id="heroCarouselDesktop" class="carousel slide hero-carousel mt-5 pt-2 d-none d-lg-block" data-bs-ride="carousel" th:if="${not #lists.isEmpty(featuredOffers)}">
+                <div class="carousel-inner">
+                    <!-- Iterujemy co 3 elementy -->
+                    <div th:each="i : ${#numbers.sequence(0, featuredOffers.size() - 1, 3)}" class="carousel-item" th:classappend="${i == 0 ? 'active' : ''}">
+                        <!-- ZMIANA: Użycie d-flex i gap zamiast row/col, dodanie py-4 aby nie ucinało cieni/hovera -->
+                        <div class="d-flex justify-content-center gap-4 py-4">
+                            <!-- Pętla wewnętrzna generująca do 3 kafelków w wierszu -->
+                            <th:block th:each="offset : ${#numbers.sequence(0, 2)}">
+                                <div th:if="${i + offset < featuredOffers.size()}" th:with="offer=${featuredOffers[i + offset]}">
+                                    <!-- Zmniejszona szerokość do 320px dla lepszego dopasowania na laptopach -->
+                                    <a th:href="@{/offers/{id}(id=${offer.id})}" class="text-decoration-none d-block" style="width: 320px; max-width: 100%;">
+                                        <div class="hero-offer-card mx-auto">
+                                            <th:block th:with="mainImage=${offer.getMainImage().orElse(null)}">
+                                                <img th:if="${mainImage != null}" th:src="@{'/car_photo/' + ${mainImage.fileName}}" alt="Auto">
+                                                <img th:if="${mainImage == null}" th:src="@{${@systemSettingService.getDefaultOfferImageUrl()}}" alt="Auto">
+                                            </th:block>
+                                            <div class="card-body">
+                                                <h5 th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}">Marka Model</h5>
+                                                <p>
+                                                    <span th:text="${offer.rok}">2020</span> &bull;
+                                                    <span th:text="${@priceFormatter.print(offer.cena, #locale)}">100 000 PLN</span>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </th:block>
+                        </div>
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#heroCarouselDesktop" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Poprzedni</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#heroCarouselDesktop" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Następny</span>
+                </button>
+            </div>
+
+            <div class="mt-5">
                 <a th:href="@{/offers}" class="btn btn-primary btn-lg px-5 py-3 gap-3 fw-bold" role="button">Zobacz wszystkie oferty</a>
             </div>
         </div>
@@ -290,7 +362,7 @@
                                 <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}">
                                     <h6 class="price fw-bold mb-3" th:text="${@priceFormatter.print(offer.cena, #locale)}"></h6>
                                 </th:block>
-                                <a th:href="@{/offers/{id}(id=${offer.id})}" class="btn btn-offer btn-outline-primary stretched-link w-100">Zobacz Szczegóły</a>
+                                <a th:href="@{/offers/{id}(id=${offer.id})}" class="btn btn-offer btn-outline-primary w-100 stretched-link">Zobacz Szczegóły</a>
                             </div>
                         </div>
                     </div>
@@ -357,39 +429,48 @@
     </section>
 
     <!-- ZMIANA: Galeria dynamiczna -->
+<!--    <section class="py-5">-->
+<!--        <div class="container">-->
+<!--            <h2 class="text-center mb-5 display-5 fw-bold">Galeria</h2>-->
+<!--            <div class="gallery-wrapper">-->
+<!--                <button class="gallery-nav-btn left" onclick="scrollGallery(-1)"><i class="fas fa-chevron-left"></i></button>-->
+<!--                <div class="gallery-scroll" id="galleryScroll">-->
+<!--                    <div th:each="imageUrl : ${galleryImages}" class="gallery-img-container" onclick="openModal(this)">-->
+<!--                        <img th:src="@{${imageUrl}}" alt="Image 1" loading="lazy">-->
+<!--                    </div>-->
+<!--                    <div th:if="${galleryImages.empty}" class="text-center w-100 p-5">-->
+<!--                        <p class="lead text-muted">Galeria jest obecnie pusta.</p>-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--                <button class="gallery-nav-btn right" onclick="scrollGallery(1)"><i class="fas fa-chevron-right"></i></button>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </section>-->
+
+<!--    <section class="py-4 border-bottom border-top">-->
+<!--        <div class="container">-->
+<!--            <div class="brands-carousel">-->
+<!--                <div class="brands-track">-->
+<!--                    &lt;!&ndash; Podwójna pętla dla płynnego przewijania &ndash;&gt;-->
+<!--                    <div th:each="brand : ${brands}" class="brand-logo">-->
+<!--                        <img th:if="${brand.iconUrl}" th:src="@{${brand.iconUrl}}" th:alt="${brand.nazwaMarki}">-->
+<!--                    </div>-->
+<!--                    <div th:each="brand : ${brands}" class="brand-logo">-->
+<!--                        <img th:if="${brand.iconUrl}" th:src="@{${brand.iconUrl}}" th:alt="${brand.nazwaMarki}">-->
+<!--                    </div>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </section>-->
     <section class="py-5">
         <div class="container">
-            <h2 class="text-center mb-5 display-5 fw-bold">Galeria</h2>
-            <div class="gallery-wrapper">
-                <button class="gallery-nav-btn left" onclick="scrollGallery(-1)"><i class="fas fa-chevron-left"></i></button>
-                <div class="gallery-scroll" id="galleryScroll">
-                    <div th:each="imageUrl : ${galleryImages}" class="gallery-img-container" onclick="openModal(this)">
-                        <img th:src="@{${imageUrl}}" alt="Image 1" loading="lazy">
-                    </div>
-                    <div th:if="${galleryImages.empty}" class="text-center w-100 p-5">
-                        <p class="lead text-muted">Galeria jest obecnie pusta.</p>
-                    </div>
-                </div>
-                <button class="gallery-nav-btn right" onclick="scrollGallery(1)"><i class="fas fa-chevron-right"></i></button>
-            </div>
+            <a href="https://www.instagram.com/flame.candle.pl/" target="_blank">
+                <img src="/photo/banner.jpeg" width="98%">
+            </a>
+
         </div>
     </section>
 
-    <section class="py-4 border-bottom border-top">
-        <div class="container">
-            <div class="brands-carousel">
-                <div class="brands-track">
-                    <!-- Podwójna pętla dla płynnego przewijania -->
-                    <div th:each="brand : ${brands}" class="brand-logo">
-                        <img th:if="${brand.iconUrl}" th:src="@{${brand.iconUrl}}" th:alt="${brand.nazwaMarki}">
-                    </div>
-                    <div th:each="brand : ${brands}" class="brand-logo">
-                        <img th:if="${brand.iconUrl}" th:src="@{${brand.iconUrl}}" th:alt="${brand.nazwaMarki}">
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -415,6 +496,17 @@
             const gallery = document.getElementById('galleryScroll');
             const scrollAmount = 320; // Szerokość zdjęcia + gap
             gallery.scrollBy({
+                left: direction * scrollAmount,
+                behavior: 'smooth'
+            });
+        }
+
+        // ZMIANA: Funkcja przewijania dla Hero
+        function scrollHero(direction) {
+            const heroScroll = document.getElementById('heroScroll');
+            // Przewijamy o szerokość kontenera (widoczne kafelki)
+            const scrollAmount = heroScroll.clientWidth;
+            heroScroll.scrollBy({
                 left: direction * scrollAmount,
                 behavior: 'smooth'
             });

@@ -30,8 +30,8 @@
                             th:text="${nadwozie.displayName}"></option>
                 </select>
             </div>
-            <div class="col-md-2"><label for="priceFrom" class="form-label">Cena od</label><input type="number" id="priceFrom" class="form-control" th:field="*{priceFrom}"></div>
-            <div class="col-md-2"><label for="priceTo" class="form-label">Cena do</label><input type="number" id="priceTo" class="form-control" th:field="*{priceTo}"></div>
+            <div class="col-md-3"><label for="priceFrom" class="form-label">Cena od</label><input type="number" id="priceFrom" class="form-control" th:field="*{priceFrom}"></div>
+            <div class="col-md-3"><label for="priceTo" class="form-label">Cena do</label><input type="number" id="priceTo" class="form-control" th:field="*{priceTo}"></div>
             <!-- Przycisk Filtruj w pierwszym wierszu (dla desktopu) -->
 
         </div>
@@ -67,7 +67,6 @@
                             th:text="${paliwo.displayName}"></option>
                 </select>
             </div>
-            <div class="col-md-1 d-flex align-items-end"><button type="submit" class="btn btn-primary w-100">Szukaj</button></div>
             <div class="col-md-3">
                 <label for="sort" class="form-label">Sortuj według</label>
                 <select id="sort" class="form-select" th:field="*{sort}" onchange="this.form.submit()">
@@ -79,9 +78,10 @@
             </div>
         </div>
 
-        <div class="row mt-3">
-            <div class="col-12 text-end">
+        <div class="row mt-4">
+            <div class="col-12 d-flex justify-content-end align-items-center gap-3">
                 <a th:href="@{/offers}" class="btn btn-link text-decoration-none text-secondary"><i class="fas fa-times"></i> Wyczyść filtry</a>
+                <button type="submit" class="btn btn-primary px-5">Szukaj</button>
             </div>
         </div>
     </form>

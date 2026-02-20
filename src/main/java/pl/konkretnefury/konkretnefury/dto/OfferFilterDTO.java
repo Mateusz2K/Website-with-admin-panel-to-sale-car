@@ -1,5 +1,6 @@
 package pl.konkretnefury.konkretnefury.dto;
 
+import pl.konkretnefury.konkretnefury.modele.RodzajNadwozia;
 import pl.konkretnefury.konkretnefury.modele.RodzajPaliwa;
 import pl.konkretnefury.konkretnefury.modele.SkrzyniaBiegow;
 import pl.konkretnefury.konkretnefury.modele.TypPojazdu;
@@ -12,7 +13,7 @@ public class OfferFilterDTO {
     private BigDecimal priceFrom;
     private BigDecimal priceTo;
     private Integer yearFrom;
-    private String typNadwozia;
+    private RodzajNadwozia typNadwozia;
     private SkrzyniaBiegow skrzyniaBiegow;
     private RodzajPaliwa rodzajPaliwa;
     private TypPojazdu typPojazdu;
@@ -28,8 +29,8 @@ public class OfferFilterDTO {
     public Integer getYearFrom() { return yearFrom; }
     public void setYearFrom(Integer yearFrom) { this.yearFrom = yearFrom; }
 
-    public String getTypNadwozia() { return typNadwozia; }
-    public void setTypNadwozia(String typNadwozia) { this.typNadwozia = typNadwozia; }
+    public RodzajNadwozia getTypNadwozia() { return typNadwozia; }
+    public void setTypNadwozia(RodzajNadwozia typNadwozia) { this.typNadwozia = typNadwozia; }
     public SkrzyniaBiegow getSkrzyniaBiegow() { return skrzyniaBiegow; }
     public void setSkrzyniaBiegow(SkrzyniaBiegow skrzyniaBiegow) { this.skrzyniaBiegow = skrzyniaBiegow; }
 

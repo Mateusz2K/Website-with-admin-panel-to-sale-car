@@ -38,7 +38,7 @@ public class CarOfferImageService {
         CarOfferImage newMainImage = imageRepository.findById(imageId)
                 .orElseThrow(() -> new RuntimeException("Image not found"));
 
-        List<CarOfferImage> allImagesForOffer = imageRepository.findByCarOffer(newMainImage.getCarOffer());
+        List<CarOfferImage> allImagesForOffer = imageRepository.findByCarOfferIdOrderByIsMainDescDisplayOrderAsc(newMainImage.getCarOffer().getId());
         allImagesForOffer.forEach(image -> image.setMain(false));
         newMainImage.setMain(true);
         imageRepository.saveAll(allImagesForOffer);

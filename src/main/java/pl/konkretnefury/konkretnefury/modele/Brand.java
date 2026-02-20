@@ -15,7 +15,7 @@ public class Brand {
     @GeneratedValue
     private UUID id;
     @NotNull
-    private String NazwaMarki;
+    private String nazwaMarki;
 
     private String iconUrl;
 
@@ -34,11 +34,11 @@ public class Brand {
     }
 
     public String getNazwaMarki() {
-        return NazwaMarki;
+        return nazwaMarki;
     }
 
     public void setNazwaMarki(String nazwaMarki) {
-        NazwaMarki = nazwaMarki;
+        this.nazwaMarki = nazwaMarki;
     }
 
     public List<BrandsModel> getLista_modeli() {

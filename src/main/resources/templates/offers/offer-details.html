@@ -33,20 +33,21 @@
 </head>
 <body>
 <div th:replace="~{/public/fragments/navigation :: navbar}"></div>
-<main class="container mt-5 py-5">
+<main class="container py-5">
     <div class="row">
+        <!-- LEWA KOLUMNA (Zdjęcia, Opis, Wyposażenie) -->
         <div class="col-lg-8">
             <h1 class="d-flex align-items-center">
                 <img th:if="${offer.brand?.iconUrl != null}" th:src="@{${offer.brand.iconUrl}}" alt="Logo marki" class="me-3" style="height: 50px; width: auto; object-fit: contain;">
                 <span th:text="${offer.brand?.nazwaMarki + ' ' + offer.model?.model}"></span>
             </h1>
 
-            <p class="text-muted mb-4">
-                <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span> &bull;
-                <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span> &bull;
-                <span th:if="${offer.skrzyniaBiegow != null}" th:text="${offer.skrzyniaBiegow.displayName}"></span> &bull;
-                <span th:if="${offer.rodzajPaliwa != null}" th:text="${offer.rodzajPaliwa.displayName}"></span>
-            </p>
+<!--            <p class="text-muted mb-4">-->
+<!--                <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span> &bull;-->
+<!--                <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span> &bull;-->
+<!--                <span th:if="${offer.skrzyniaBiegow != null}" th:text="${offer.skrzyniaBiegow.displayName}"></span> &bull;-->
+<!--                <span th:if="${offer.rodzajPaliwa != null}" th:text="${offer.rodzajPaliwa.displayName}"></span>-->
+<!--            </p>-->
 
             <!-- Główna karuzela -->
             <div id="photoCarousel" class="carousel slide shadow-lg rounded overflow-hidden mb-2">
@@ -77,11 +78,14 @@
                 </button>
             </div>
 
-            <!-- ... reszta sekcji (opis, gwarancja, wyposażenie) bez zmian ... -->
+            <!-- ZMIANA: Przeniesienie karty z parametrami tutaj dla wersji mobilnej (widoczna tylko na < lg) -->
+            <div class="d-lg-none mb-5">
+                <div th:replace="~{:: #paramCard}"></div>
+            </div>
+
             <div class="row mt-5">
                 <div class="col-12">
                     <h3 class="border-bottom pb-2 mb-3">Opis Pojazdu</h3>
-                    <!-- ZMIANA: th:utext zamiast th:text -->
                     <div th:utext="${offer.opis}"></div>
                 </div>
             </div>
@@ -91,7 +95,6 @@
                     <div class="card bg-light border-success">
                         <div class="card-body">
                             <h4 class="card-title text-success"><i class="fas fa-shield-alt"></i> Gwarancja</h4>
-                            <!-- ZMIANA: th:utext zamiast th:text -->
                             <div class="card-text" th:utext="${offer.gwarancjaOpis}"></div>
                         </div>
                     </div>
@@ -117,11 +120,12 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
-            <div class="card sticky-top shadow-sm" style="top: 100px;">
+        <!-- PRAWA KOLUMNA (Cena, Parametry - widoczna tylko na >= lg) -->
+        <div class="col-lg-4 d-none d-lg-block">
+            <div id="paramCard" class="card sticky-top shadow-sm" style="top: 100px;">
                 <div class="card-body">
                     <th:block th:if="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title text-danger text-center mb-4">Oferta nieaktualna</h3></th:block>
-                    <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title price text-center mb-4" th:text="${@priceFormatter.print(offer.cena, #locale)}"></h3></th:block>
+                    <th:block th:unless="${offer.status?.name() == 'SPRZEDANY'}"><h3 class="card-title price text-center mb-4 fw-bold" th:text="${@priceFormatter.print(offer.cena, #locale)}"></h3></th:block>
 
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item d-flex justify-content-between"><strong>Marka:</strong> <span th:text="${offer.brand?.nazwaMarki}"></span></li>
@@ -138,7 +142,7 @@
 
                         <!-- ZMIANA: Dodanie flagi obok kraju -->
                         <li class="list-group-item d-flex justify-content-between align-items-center" th:if="${offer.krajPochodzenia != null}">
-                            <strong>Kraj:</strong>
+                            <strong>Kraj pochodzenia:</strong>
                             <span class="d-flex align-items-center">
                                 <img th:src="@{'https://flagcdn.com/w20/' + ${offer.krajPochodzenia.flagCode} + '.png'}"
                                      th:alt="${offer.krajPochodzenia.displayName}"
@@ -151,14 +155,14 @@
                         <li class="list-group-item d-flex justify-content-between" th:if="${offer.typPojazdu != null}"><strong>Typ:</strong> <span th:text="${offer.typPojazdu.displayName}"></span></li>
                         <li class="list-group-item d-flex justify-content-between"><strong>Status:</strong> <span class="badge" th:classappend="${offer.status?.name() == 'DOSTĘPNY' ? 'bg-success' : 'bg-warning'}" th:text="${offer.status?.displayName}"></span></li>
                     </ul>
-                    <a href="tel:+48693265264" class="btn btn-primary w-100 mt-4 btn-lg" >&#128222 +48 693 265 264</a>
+                    <a href="tel:+48693265264" class="btn btn-primary w-100 mt-4 btn-lg" >&#9743 +48 693 265 264</a>
                 </div>
             </div>
         </div>
     </div>
 </main>
 
-<!-- ZMIANA: Modal Lightbox -->
+<!-- Modal Lightbox -->
 <div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
         <div class="modal-content bg-transparent border-0">
@@ -173,7 +177,6 @@
 <div th:replace="~{/public/fragments/footer :: footer}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- ZMIANA: Skrypt do obsługi galerii -->
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const carousel = document.getElementById('photoCarousel');

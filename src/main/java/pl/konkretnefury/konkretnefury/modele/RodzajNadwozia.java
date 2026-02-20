@@ -4,7 +4,7 @@ public enum RodzajNadwozia {
     SEDAN("Sedan"),
     SUV("SUV"),
     MINIVAN("Minivan"),
-    KOMPAKT("Kompakt"),
+    TERENOWE("Terenowe"),
     HATCHBACK("Hatchback"),
     KABRIOLET("Kabriolet"),
     COUPE("Coupe"),

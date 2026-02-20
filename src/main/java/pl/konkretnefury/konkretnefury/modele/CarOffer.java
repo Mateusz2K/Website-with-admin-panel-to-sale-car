@@ -2,6 +2,7 @@ package pl.konkretnefury.konkretnefury.modele;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 import pl.konkretnefury.konkretnefury.format.annotation.MileageFormat;
 import pl.konkretnefury.konkretnefury.format.annotation.PowerFormat;
 import pl.konkretnefury.konkretnefury.format.annotation.PriceFormat;
@@ -51,8 +52,7 @@ public class CarOffer {
     @Lob 
     @Column(columnDefinition = "TEXT")
     private String opis;
-    
-    @Enumerated(EnumType.STRING) @Column(length = 50) private StatusOfCar status;
+    @Enumerated(EnumType.STRING) @Column(length = 50, columnDefinition = "varchar(50) default 'DOSTĘPNY'") private StatusOfCar status = StatusOfCar.DOSTĘPNY;
     private boolean isFeatured = false;
     @CreationTimestamp private LocalDateTime creationDate;
 

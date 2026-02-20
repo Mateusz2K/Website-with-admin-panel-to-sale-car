@@ -2,6 +2,7 @@ package pl.konkretnefury.konkretnefury.service;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.persistence.criteria.Predicate;
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,10 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class CarOfferService {
@@ -74,6 +72,13 @@ public class CarOfferService {
         if (images != null && images.length > 0) {
             logger.info("Zapisywanie {} zdjęć dla oferty {}", images.length, savedOffer.getId());
             boolean hasMainImage = savedOffer.getZdjęcia().stream().anyMatch(CarOfferImage::isMain);
+            
+            // Znajdź najwyższy numer kolejności
+            int maxOrder = savedOffer.getZdjęcia().stream()
+                    .mapToInt(CarOfferImage::getDisplayOrder)
+                    .max()
+                    .orElse(0);
+
             for (int i = 0; i < images.length; i++) {
                 MultipartFile image = images[i];
                 if (image != null && !image.isEmpty()) {
@@ -81,6 +86,11 @@ public class CarOfferService {
                     CarOfferImage offerImage = new CarOfferImage();
                     offerImage.setFileName(relativePath);
                     offerImage.setCarOffer(savedOffer);
+                    
+                    // Ustaw kolejność
+                    maxOrder++;
+                    offerImage.setDisplayOrder(maxOrder);
+                    
                     if (i == 0 && !hasMainImage) {
                         offerImage.setMain(true);
                         hasMainImage = true;
@@ -145,32 +155,6 @@ public class CarOfferService {
     }
     
     public Page<CarOffer> findWithFilters(OfferFilterDTO filters, Pageable pageable) {
-        // ZMIANA: Obsługa sortowania
-        Sort sort = Sort.unsorted();
-        if (filters.getSort() != null) {
-            switch (filters.getSort()) {
-                case "price_asc":
-                    sort = Sort.by("cena").ascending();
-                    break;
-                case "price_desc":
-                    sort = Sort.by("cena").descending();
-                    break;
-                case "name_asc":
-                    sort = Sort.by("brand.nazwaMarki").ascending().and(Sort.by("model.model").ascending());
-                    break;
-                case "newest":
-                    sort = Sort.by("creationDate").descending();
-                    break;
-                default:
-                    sort = Sort.by("creationDate").descending(); // Domyślne sortowanie
-            }
-        } else {
-            sort = Sort.by("creationDate").descending();
-        }
-
-        // Tworzymy nowy obiekt Pageable z uwzględnieniem sortowania
-        Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
-
         Specification<CarOffer> spec = (root, query, cb) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (filters.getBrandId() != null) predicates.add(cb.equal(root.get("brand").get("id"), filters.getBrandId()));
@@ -181,12 +165,64 @@ public class CarOfferService {
             if (filters.getRodzajPaliwa() != null) predicates.add(cb.equal(root.get("rodzajPaliwa"), filters.getRodzajPaliwa()));
             if (filters.getTypNadwozia() != null) predicates.add(cb.equal(root.get("rodzajNadwozia"), filters.getTypNadwozia()));
             if (filters.getTypPojazdu() != null) predicates.add(cb.equal(root.get("typPojazdu"), filters.getTypPojazdu()));
+
+            // Logika sortowania wewnątrz Specification (aby obsłużyć priorytet statusów)
+            // Sprawdzamy typ wyniku, aby nie dodawać ORDER BY do zapytania liczącego rekordy (count query)
+            if (query.getResultType() != Long.class && query.getResultType() != long.class) {
+                List<jakarta.persistence.criteria.Order> orders = new ArrayList<>();
+
+                // 1. Priorytet: Status (Dostępny -> Zarezerwowany -> Wkrótce -> Sprzedany)
+                jakarta.persistence.criteria.Expression<Integer> statusOrder = cb.selectCase()
+                        .when(cb.equal(root.get("status"), StatusOfCar.DOSTĘPNY), 1)
+                        .when(cb.equal(root.get("status"), StatusOfCar.ZAREZERWOWANY), 2)
+                        .when(cb.equal(root.get("status"), StatusOfCar.WKROTCE), 3)
+                        .when(cb.equal(root.get("status"), StatusOfCar.SPRZEDANY), 4)
+                        .otherwise(5).as(Integer.class);
+
+                orders.add(cb.asc(statusOrder));
+
+                // 2. Drugi priorytet: Wybór użytkownika (Cena, Data itp.)
+                String sortParam = filters.getSort() != null ? filters.getSort() : "newest";
+                switch (sortParam) {
+                    case "price_asc":
+                        orders.add(cb.asc(root.get("cena")));
+                        break;
+                    case "price_desc":
+                        orders.add(cb.desc(root.get("cena")));
+                        break;
+                    case "name_asc":
+                        orders.add(cb.asc(root.get("brand").get("nazwaMarki")));
+                        orders.add(cb.asc(root.get("model").get("model")));
+                        break;
+                    case "newest":
+                    default:
+                        orders.add(cb.desc(root.get("creationDate")));
+                        break;
+                }
+                query.orderBy(orders);
+            }
+
             return cb.and(predicates.toArray(new Predicate[0]));
         };
-        return carOfferRepository.findAll(spec, sortedPageable);
+        
+        // Przekazujemy Pageable BEZ sortowania, ponieważ sortowanie jest już w Specification
+        Pageable unsortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize());
+        return carOfferRepository.findAll(spec, unsortedPageable);
     }
     public List<CarOffer> getAllOffers() { return carOfferRepository.findAll(); }
-    public Optional<CarOffer> getOfferById(UUID id) { return carOfferRepository.findById(id);}
+    
+    // ZMIANA: Pobieranie oferty z posortowanymi zdjęciami
+    public Optional<CarOffer> getOfferById(UUID id) { 
+        Optional<CarOffer> offer = carOfferRepository.findById(id);
+        offer.ifPresent(o -> {
+            // Sortujemy istniejącą listę w miejscu
+            o.getZdjęcia().sort(
+                Comparator.comparing(CarOfferImage::isMain).reversed()
+                          .thenComparing(CarOfferImage::getDisplayOrder)
+            );
+        });
+        return offer;
+    }
     
     @Transactional
     public void changeStatusOfOffer(UUID id, String status) {
@@ -226,5 +262,18 @@ public class CarOfferService {
             }
         }
         return offers;
+    }
+    
+    // ZMIANA: Metoda do aktualizacji kolejności zdjęć
+    @Transactional
+    public void updateImageOrder(List<UUID> orderedIds) {
+        for (int i = 0; i < orderedIds.size(); i++) {
+            int finalI = i;
+            UUID id = orderedIds.get(i);
+            carOfferImageRepository.findById(id).ifPresent(img -> {
+                img.setDisplayOrder(finalI);
+                carOfferImageRepository.save(img);
+            });
+        }
     }
 }

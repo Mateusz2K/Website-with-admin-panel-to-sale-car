@@ -5,47 +5,79 @@
     <title>Zarządzaj Ofertą</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <!-- ZMIANA: Dodano CSS Summernote -->
     <link href="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/admin-style.css}">
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <style>
+        .preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .preview-item {
+            position: relative;
+            width: 120px;
+            height: 90px;
+        }
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 5px;
+        }
+        /* Styl dla sortowalnej listy zdjęć */
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #e9ecef;
+        }
+        .image-card {
+            cursor: grab;
+        }
+        .image-card:active {
+            cursor: grabbing;
+        }
+    </style>
 </head>
 <body>
 <div th:replace="~{admin/fragments/navigation :: navbar}"></div>
 <main class="container mt-4">
     <div class="form-container">
         <h1 class="h2 mb-4" th:text="${offer.id == null ? 'Dodaj Nową Ofertę' : 'Edytuj Ofertę'}"></h1>
-        <form th:action="@{/admin/offers}" th:object="${offer}" method="post" enctype="multipart/form-data">
+        <form th:action="@{/admin/offers/save}" th:object="${offer}" method="post" enctype="multipart/form-data">
             <input type="hidden" th:field="*{id}"/>
 
             <div th:if="${offer.id != null}" class="mb-5">
-                <h3 class="h4">Zarządzaj Zdjęciami</h3>
-                <div id="imageCarousel" class="carousel slide" data-bs-interval="false">
-                    <div class="carousel-inner">
-                        <div th:if="${offer.zdjęcia.isEmpty()}" class="carousel-item active"><div class="d-flex justify-content-center align-items-center bg-light" style="height: 400px;"><span>Brak zdjęć</span></div></div>
-                        <div th:each="image, iterStat : ${offer.zdjęcia}" class="carousel-item" th:classappend="${iterStat.first ? 'active' : ''}" th:data-image-id="${image.id}">
-                            <img th:src="@{/car_photo/{fileName}(fileName=${image.fileName})}" class="d-block w-100" style="height: 400px; object-fit: contain;">
-                            <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded p-2">
-                                <button type="button" class="btn btn-sm btn-primary" th:classappend="${image.isMain ? 'disabled' : ''}" onclick="setMainImage(this)"><i class="fas fa-star"></i> Ustaw jako główne</button>
-                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteImage(this)"><i class="fas fa-trash"></i> Usuń</button>
-                                <p th:if="${image.isMain}" class="mt-2 mb-0"><span class="badge bg-success">Zdjęcie główne</span></p>
+                <h3 class="h4">Zarządzaj Zdjęciami (Przeciągnij, aby zmienić kolejność)</h3>
+                <!-- ZMIANA: Zastąpiono karuzelę siatką do sortowania -->
+                <div id="imageList" class="row g-2">
+                    <div th:if="${offer.zdjęcia.isEmpty()}" class="col-12 text-center p-4 bg-light">Brak zdjęć</div>
+                    <div th:each="img : ${offer.zdjęcia}" class="col-6 col-md-3 col-lg-2 image-card" th:data-id="${img.id}">
+                        <div class="card h-100 shadow-sm">
+                            <img th:src="@{'/car_photo/' + ${img.fileName}}" class="card-img-top" style="height: 100px; object-fit: cover;">
+                            <div class="card-body p-2 text-center">
+                                <span th:if="${img.main}" class="badge bg-success mb-1 w-100">Główne</span>
+                                <div class="btn-group btn-group-sm w-100 mt-1">
+                                    <a th:if="${!img.main}" th:href="@{/admin/offers/set-main/{offerId}/{imgId}(offerId=${offer.id}, imgId=${img.id})}" class="btn btn-outline-primary" title="Ustaw jako główne"><i class="fas fa-star"></i></a>
+                                    <a th:href="@{/admin/offers/delete-image/{offerId}/{imgId}(offerId=${offer.id}, imgId=${img.id})}" class="btn btn-outline-danger" title="Usuń" onclick="return confirm('Usunąć zdjęcie?')"><i class="fas fa-trash"></i></a>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#imageCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon"></span></button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#imageCarousel" data-bs-slide="next"><span class="carousel-control-next-icon"></span></button>
                 </div>
             </div>
 
             <div class="mb-4">
                 <label for="images" class="form-label">Dodaj nowe zdjęcia</label>
                 <input class="form-control" type="file" id="images" name="images" multiple>
+                <div id="image-preview-container" class="preview-container"></div>
             </div>
             <hr>
 
+            <!-- ... (reszta formularza bez zmian) ... -->
             <div class="row">
-                <div class="col-md-6 mb-3"><label for="brand" class="form-label">Marka</label><select id="brand" class="form-select" th:field="*{brand}" required><option value="">-- Wybierz --</option><option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.nazwaMarki}"></option></select></div>
+                <div class="col-md-6 mb-3"><label for="brand" class="form-label">Marka</label><select id="brand" class="form-select" th:field="*{brand}" required onchange="loadModels()"><option value="">-- Wybierz --</option><option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.nazwaMarki}"></option></select></div>
                 <div class="col-md-6 mb-3"><label for="model" class="form-label">Model</label><select id="model" class="form-select" th:field="*{model}" required disabled><option th:if="${offer.model != null}" th:value="${offer.model.id}" th:text="${offer.model.model}" selected></option></select></div>
             </div>
             <div class="mb-3">
@@ -71,7 +103,6 @@
             <div class="row">
                 <div class="col-md-4 mb-3"><label for="naped" class="form-label">Napęd</label><select id="naped" class="form-select" th:field="*{naped}"><option value="">-- Wybierz --</option><option th:each="n : ${T(pl.konkretnefury.konkretnefury.modele.Naped).values()}" th:value="${n}" th:text="${n.displayName}"></option></select></div>
                 <div class="col-md-4 mb-3"><label for="skrzyniaBiegow" class="form-label">Skrzynia biegów</label><select id="skrzyniaBiegow" class="form-select" th:field="*{skrzyniaBiegow}"><option value="">-- Wybierz --</option><option th:each="s : ${T(pl.konkretnefury.konkretnefury.modele.SkrzyniaBiegow).values()}" th:value="${s}" th:text="${s.displayName}"></option></select></div>
-                <!-- ZMIANA: Pole tekstowe zastąpione listą rozwijaną -->
                 <div class="col-md-4 mb-3"><label for="krajPochodzenia" class="form-label">Kraj pochodzenia</label><select id="krajPochodzenia" class="form-select" th:field="*{krajPochodzenia}"><option value="">-- Wybierz --</option><option th:each="kraj : ${T(pl.konkretnefury.konkretnefury.modele.KrajPochodzenia).values()}" th:value="${kraj}" th:text="${kraj.displayName}"></option></select></div>
             </div>
             <div class="mb-3">
@@ -81,13 +112,11 @@
                 </div>
                 <div id="gwarancjaOpisContainer" style="display: none;" class="mt-2">
                     <label for="gwarancjaOpis" class="form-label">Szczegóły gwarancji</label>
-                    <!-- ZMIANA: Dodano klasę summernote -->
                     <textarea id="gwarancjaOpis" class="form-control summernote" th:field="*{gwarancjaOpis}" rows="2"></textarea>
                 </div>
             </div>
             <div class="mb-3">
                 <label for="opis" class="form-label">Opis</label>
-                <!-- ZMIANA: Dodano klasę summernote -->
                 <textarea id="opis" class="form-control summernote" rows="5" th:field="*{opis}"></textarea>
             </div>
             <div class="form-check mb-4"><input class="form-check-input" type="checkbox" id="isFeatured" th:field="*{featured}"><label class="form-check-label" for="isFeatured"><strong>Oznacz jako promowana</strong></label></div>
@@ -112,12 +141,12 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<!-- ZMIANA: Dodano JS Summernote -->
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/summernote-lite.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/summernote@0.8.18/dist/lang/summernote-pl-PL.min.js"></script>
+<!-- ZMIANA: Dodano SortableJS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
 
 <script>
-    // ZMIANA: Inicjalizacja Summernote
     $(document).ready(function() {
         $('.summernote').summernote({
             placeholder: 'Wpisz treść...',
@@ -134,12 +163,47 @@
                 ['view', ['fullscreen', 'codeview', 'help']]
             ]
         });
+
+        // ZMIANA: Inicjalizacja SortableJS dla listy zdjęć
+        const imageList = document.getElementById('imageList');
+        if (imageList) {
+            new Sortable(imageList, {
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                onEnd: function () {
+                    saveImageOrder();
+                }
+            });
+        }
     });
+
+    function saveImageOrder() {
+        const items = document.querySelectorAll('#imageList .image-card');
+        const orderedIds = Array.from(items).map(item => item.getAttribute('data-id'));
+
+        const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
+        const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
+
+        fetch('/admin/offers/reorder-images', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                [header]: token
+            },
+            body: JSON.stringify(orderedIds)
+        }).then(response => {
+            if (response.ok) {
+                console.log('Kolejność zapisana');
+            } else {
+                console.error('Błąd zapisu kolejności');
+            }
+        });
+    }
 
     document.addEventListener('DOMContentLoaded', function () {
         const brandSelect = document.getElementById('brand');
         const modelSelect = document.getElementById('model');
-        const selectedModelId = modelSelect.value; // Przechowaj wybrane ID przy edycji
+        const selectedModelId = modelSelect.value;
 
         function fetchModels(brandId) {
             if (!brandId) {
@@ -158,7 +222,6 @@
                         modelSelect.appendChild(option);
                     });
                     modelSelect.disabled = false;
-                    // Jeśli edytujemy, przywróć wybrany model
                     if (selectedModelId) {
                         modelSelect.value = selectedModelId;
                     }
@@ -184,37 +247,36 @@
             toggleGwarancjaOpis();
         }
 
-        // ZMIANA: Inicjalizacja stanu nadwozia
         toggleNadwozie();
     });
 
+    function loadModels() {
+        // Funkcja pomocnicza dla onchange w HTML, deleguje do fetchModels
+        const brandId = document.getElementById("brand").value;
+        // Logika jest już w event listenerze, ale dla kompatybilności z onchange:
+        const event = new Event('change');
+        document.getElementById("brand").dispatchEvent(event);
+    }
+
     function setMainImage(button) {
-        const imageId = button.closest('.carousel-item').dataset.imageId;
+        const imageId = button.closest('.image-card').dataset.id;
         const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
         const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
 
-        fetch(`/api/images/set-main/${imageId}`, {
-            method: 'POST',
-            headers: {
-                [header]: token
-            }
+        fetch(`/admin/offers/set-main/${document.querySelector('input[name="id"]').value}/${imageId}`, {
+            method: 'GET',
         }).then(() => window.location.reload());
     }
 
     function deleteImage(button) {
         if (confirm('Czy na pewno chcesz usunąć to zdjęcie?')) {
-            const imageId = button.closest('.carousel-item').dataset.imageId;
-            const token = document.querySelector("meta[name='_csrf']").getAttribute("content");
-            const header = document.querySelector("meta[name='_csrf_header']").getAttribute("content");
-
-            fetch(`/api/images/delete/${imageId}`, {
-                method: 'DELETE',
-                headers: {
-                    [header]: token
-                }
+            const imageId = button.closest('.image-card').dataset.id;
+            fetch(`/admin/offers/delete-image/${document.querySelector('input[name="id"]').value}/${imageId}`, {
+                method: 'GET',
             }).then(() => window.location.reload());
         }
     }
+
     function toggleGwarancjaOpis() {
         const container = document.getElementById('gwarancjaOpisContainer');
         const checkbox = document.getElementById('gwarancjaCheck');
@@ -224,7 +286,6 @@
         } else {
             container.style.display = 'none';
             textarea.value = '';
-            // Jeśli Summernote jest aktywny, wyczyść go też
             if ($(textarea).summernote) {
                 $(textarea).summernote('code', '');
             }
@@ -257,6 +318,26 @@
             ciezaroweSelect.required = false;
         }
     }
+
+    document.getElementById('images').addEventListener('change', function(event) {
+        const previewContainer = document.getElementById('image-preview-container');
+        previewContainer.innerHTML = '';
+
+        if (this.files) {
+            Array.from(this.files).forEach(file => {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    previewItem.appendChild(img);
+                    previewContainer.appendChild(previewItem);
+                }
+                reader.readAsDataURL(file);
+            });
+        }
+    });
 </script>
 </body>
 </html>
