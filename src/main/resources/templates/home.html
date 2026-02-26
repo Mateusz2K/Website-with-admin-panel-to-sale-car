@@ -235,7 +235,6 @@
     <!-- Dynamiczna nawigacja -->
     <div th:replace="~{/public/fragments/navigation :: navbar}"></div>
 
-    <!-- Sekcja Hero (z index.html) -->
     <section class="hero-section px-4 py-5 text-center">
         <video class="hero-video"  autoplay loop muted preload="metadata" playsinline>
             <source src="/photo/konkretFilm1.mp4" type="video/mp4">
@@ -247,7 +246,7 @@
             <div class="linia">
                 <a href="/"><img style="width: 90%; height: 90%;" th:src="@{/photo/naklejka_biala1.png}" alt="logo"></a>
             </div>
-            <p class="fs-3 fw-bold mt-4 mb-5">Bo auto to nie loteria - wybierz konkret</p>
+            <p class="fs-3 fw-bold mt-4 mb-5">Auto to nie loteria - wybierz konkret</p>
 
             <!-- ZMIANA: Karuzela z promowanymi ofertami w Hero -->
             
@@ -332,7 +331,7 @@
             </div>
         </div>
     </section>
-    <section class="featured-offers py-5 content bg-light">
+    <section class="featured-offers py-5 content bg-light d-none d-lg-block">
         <div class="container">
             <div class="row g-4">
                 <div th:each="offer : ${featuredOffers}" class="col-md-6 col-lg-4">
@@ -369,27 +368,6 @@
                 </div>
             </div>
 
-            <!-- Sekcja kategorii -->
-            <!--            <div class="row mt-5 text-center g-4">-->
-            <!--                <div class="col-md-4">-->
-            <!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
-            <!--                        <h4>SUV</h4>-->
-            <!--                        <p class="text-muted">Przestrzeń, komfort, bezpieczeństwo.</p>-->
-            <!--                    </div>-->
-            <!--                </div>-->
-            <!--                <div class="col-md-4">-->
-            <!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
-            <!--                        <h4>Sportowe</h4>-->
-            <!--                        <p class="text-muted">Maksymalna moc i emocje za kierownicą.</p>-->
-            <!--                    </div>-->
-            <!--                </div>-->
-            <!--                <div class="col-md-4">-->
-            <!--                    <div class="p-4 border rounded bg-white h-100 shadow-sm">-->
-            <!--                        <h4>Miejskie</h4>-->
-            <!--                        <p class="text-muted">Idealne do codziennej jazdy w mieście.</p>-->
-            <!--                    </div>-->
-            <!--                </div>-->
-            <!--            </div>-->
         </div>
     </section>
 
@@ -428,40 +406,7 @@
         </div>
     </section>
 
-    <!-- ZMIANA: Galeria dynamiczna -->
-<!--    <section class="py-5">-->
-<!--        <div class="container">-->
-<!--            <h2 class="text-center mb-5 display-5 fw-bold">Galeria</h2>-->
-<!--            <div class="gallery-wrapper">-->
-<!--                <button class="gallery-nav-btn left" onclick="scrollGallery(-1)"><i class="fas fa-chevron-left"></i></button>-->
-<!--                <div class="gallery-scroll" id="galleryScroll">-->
-<!--                    <div th:each="imageUrl : ${galleryImages}" class="gallery-img-container" onclick="openModal(this)">-->
-<!--                        <img th:src="@{${imageUrl}}" alt="Image 1" loading="lazy">-->
-<!--                    </div>-->
-<!--                    <div th:if="${galleryImages.empty}" class="text-center w-100 p-5">-->
-<!--                        <p class="lead text-muted">Galeria jest obecnie pusta.</p>-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--                <button class="gallery-nav-btn right" onclick="scrollGallery(1)"><i class="fas fa-chevron-right"></i></button>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </section>-->
 
-<!--    <section class="py-4 border-bottom border-top">-->
-<!--        <div class="container">-->
-<!--            <div class="brands-carousel">-->
-<!--                <div class="brands-track">-->
-<!--                    &lt;!&ndash; Podwójna pętla dla płynnego przewijania &ndash;&gt;-->
-<!--                    <div th:each="brand : ${brands}" class="brand-logo">-->
-<!--                        <img th:if="${brand.iconUrl}" th:src="@{${brand.iconUrl}}" th:alt="${brand.nazwaMarki}">-->
-<!--                    </div>-->
-<!--                    <div th:each="brand : ${brands}" class="brand-logo">-->
-<!--                        <img th:if="${brand.iconUrl}" th:src="@{${brand.iconUrl}}" th:alt="${brand.nazwaMarki}">-->
-<!--                    </div>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </section>-->
     <section class="py-5">
         <div class="container">
             <a href="https://www.instagram.com/flame.candle.pl/" target="_blank">
