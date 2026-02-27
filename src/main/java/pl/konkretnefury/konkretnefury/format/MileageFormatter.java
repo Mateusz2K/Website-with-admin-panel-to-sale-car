@@ -19,4 +19,7 @@ public class MileageFormatter implements Formatter<Integer> {
         // Używa NumberFormat do poprawnego formatowania liczby
         return NumberFormat.getNumberInstance(locale).format(object) + " km";
     }
+    public String print(Integer object){
+        return print(object, Locale.getDefault());
+    }
 }

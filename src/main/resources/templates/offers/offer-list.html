@@ -114,8 +114,7 @@
                     <p class="card-text text-muted small">
                         <span th:text="${@yearFormatter.print(offer.rok, #locale)}"></span> &bull;
                         <span th:text="${@mileageFormatter.print(offer.przebieg, #locale)}"></span> &bull;
-                        <span th:if="${offer.pojemonscSilnika != null}" th:text="${offer.pojemonscSilnika}"></span> &bull;
-                        <span th:if="${offer.skrzyniaBiegow != null}" th:text="${offer.skrzyniaBiegow.displayName}"></span> &bull;
+                        <span th:text="${@powerFormatter.print(offer.moc, #locale)}"></span> &bull;
                         <span th:if="${offer.rodzajPaliwa != null}" th:text="${offer.rodzajPaliwa.displayName}"></span>
                     </p>
 

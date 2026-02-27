@@ -14,9 +14,9 @@
 }
 
 body {
-    min-width: 101%;
-  color: #000;
-  overflow-x: hidden;
+    width: 100%;
+    color: #000;
+    overflow-x: hidden;
 }
 .ken {
 
@@ -443,6 +443,9 @@ h2 {
     overflow-x: hidden;
     font-size: 14px;
   }
+    #menu img {
+        max-height: 80px; /* Mniejsze logo na telefonie */
+    }
   .ken{
     background-size: cover;
     transform: scale(2);
